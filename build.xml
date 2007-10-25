@@ -1,0 +1,50 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<project name = "Class Loading Debugger" default = "run" basedir = ".">
+    <property name="build" location="./build"/>
+    <property name="classes" location="${build}/classes"/>
+    <property name="dist" location="${build}/dist"/>
+    <property name="equinox" location="./osgi/equinox"/>
+    <property name="src" location="./src"/>
+    <property name="bundle" value="org.protege.osgi.debug.jar"/>
+
+    <target name="init">
+        <mkdir dir="${classes}"/>
+        <mkdir dir="${dist}"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <javac srcdir = "${src}" 
+               destdir = "${classes}" 
+               debug="true"
+               includeAntRuntime = "true">
+            <classpath>
+                <fileset dir="${equinox}" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar basedir = "${classes}"
+             destfile = "${dist}/${bundle}"
+             manifest="./META-INF/MANIFEST.MF"/>
+
+    </target>
+
+    <target name="dist" depends="jar">
+        <copy todir = "${dist}/equinox">
+            <fileset dir = "./osgi/equinox"/>
+        </copy>
+        <copy todir = "${dist}/equinox" file="${dist}/${bundle}"/>
+    </target>
+
+    <target name="run" depends="dist">
+      <java fork = "true" dir = "${dist}" jar = "${dist}/equinox/org.eclipse.osgi_3.3.1.R33x_v20070828.jar">
+        <jvmarg value = "-Xmx1500M"/>
+      </java>
+    </target>
+
+    <target name="clean">
+      <delete dir="${build}"/>
+    </target>
+
+</project>
