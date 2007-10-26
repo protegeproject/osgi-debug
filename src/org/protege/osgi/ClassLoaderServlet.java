@@ -52,6 +52,7 @@ public class ClassLoaderServlet extends HttpServlet {
             return null;
         }
         for (String name : names) {
+            name = name.replace('/', '.');
             return name;
         }
         return null;
