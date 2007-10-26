@@ -2,8 +2,9 @@ package org.protege.osgi;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -36,8 +37,15 @@ public class PackageServlet extends HttpServlet {
         response.setContentType("text/html");
         Bundle b = getBundle(request);
         PrintWriter out = response.getWriter();
+        doExplanation(out);
         doForm(out, b == null ? -1 : b.getBundleId());
         doResults(out, b);
+    }
+    
+    private void doExplanation(PrintWriter out) {
+        out.println("<H1>Package Import/Export Debug Utility</H1>");
+        out.println("<P>This servlet helps one see which import statements from one bundle get");
+        out.println("hooked up with which export statements from other bundles.<P>");
     }
     
     private Bundle getBundle(HttpServletRequest request) {
@@ -83,7 +91,13 @@ public class PackageServlet extends HttpServlet {
     }
 
     private void doImports(PrintWriter out, Bundle b) {
-        Set<ExportedPackage> imports = new HashSet<ExportedPackage>();
+        Set<ExportedPackage> imports = new TreeSet<ExportedPackage>(new Comparator<ExportedPackage>() {
+
+            public int compare(ExportedPackage p1, ExportedPackage p2) {
+                return p1.getName().compareTo(p2.getName());
+            }
+            
+        });
         for (Bundle exporter : context.getBundles()) {
             if (exporter.equals(b)) continue;
             ExportedPackage[] exports = packageAdmin.getExportedPackages(exporter);

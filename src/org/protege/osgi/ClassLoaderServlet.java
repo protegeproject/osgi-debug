@@ -36,6 +36,7 @@ public class ClassLoaderServlet extends HttpServlet {
         response.setContentType("text/html");
         String className = getClassName(request);
         PrintWriter out = response.getWriter();
+        doExplanation(out);
         doForm(out, className);
         if (className != null) {
             doResults(out, className);
@@ -56,6 +57,23 @@ public class ClassLoaderServlet extends HttpServlet {
             return name;
         }
         return null;
+    }
+    
+    private void doExplanation(PrintWriter out) {
+        out.println("<H1>Class Loader Debug Utility</H1>");
+        out.println("This servlet provides some debugging capabilities for problems with OSGi classloading.");
+        out.println("It will provide input on the following situations:<UL>");
+        out.println("<li> It will inform you if no bundle can find the class in question.");
+        out.println("This means that some class path in some manifest must be updated or some jar file is");
+        out.println("missing.");
+        out.println("<li> It will inform you if there are multiple different instances of the same class.");
+        out.println("In this case, care needs to be taken to ensure that these two different instances");
+        out.println("of the same class do not cause a conflict and perhaps the bundles need to be ");
+        out.println("modified so that there is only one version of this class.");
+        out.println("</UL>");
+        out.println("In addition with the <A HREF=\"" + PackageServlet.PATH + "\">package debug servlet</A>");
+        out.println("you can determine whether the import statements in the bundle Manifests are allowing ");
+        out.println("the bundle needing the class to see it.<P>");
     }
     
     private void doForm(PrintWriter out, String className) {
