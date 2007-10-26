@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Classloading Plug-in
-Bundle-SymbolicName: org.protege.osgi.servlet.debug
+Bundle-Name: OSGi Debug Plugin
+Bundle-SymbolicName: org.protege.osgi.debug
 Bundle-Version: 1.0.0
 Bundle-Activator: org.protege.osgi.DebugActivator
 Bundle-Vendor: The Protege Team

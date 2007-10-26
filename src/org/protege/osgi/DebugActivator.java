@@ -1,7 +1,9 @@
 package org.protege.osgi;
 
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,7 +20,8 @@ import org.osgi.service.packageadmin.PackageAdmin;
 
 public class DebugActivator implements BundleActivator {
     private BundleContext bundleContext;
-    private HttpServlet classLoaderServlet;
+    private PackageAdmin packageAdmin;
+    private Map<HttpServlet, String> servletNameMap = new HashMap<HttpServlet, String>();
 
 	/*
 	 * (non-Javadoc)
@@ -26,12 +29,18 @@ public class DebugActivator implements BundleActivator {
 	 */
 	public void start(BundleContext context) throws Exception {
 	    bundleContext = context;
-	    classLoaderServlet = new ClassLoaderServlet(context);
+        ServiceReference packageReference = context.getServiceReference(PackageAdmin.class.getName());
+        if (packageReference != null) {
+            packageAdmin = (PackageAdmin) context.getService(packageReference);
+        }
+        servletNameMap.put(new MainServlet(), MainServlet.PATH);
+        servletNameMap.put(new ClassLoaderServlet(context, packageAdmin), ClassLoaderServlet.PATH);
+        servletNameMap.put(new PackageServlet(context, packageAdmin), PackageServlet.PATH);
 	    ServiceReference [] serviceReferences = context.getServiceReferences(HttpService.class.getName(), null);
 	    if (serviceReferences != null) {
 	        for (ServiceReference sr : serviceReferences) {
 	            HttpService service = (HttpService) context.getService(sr);
-	            registerServlet(service);
+	            registerServlets(service);
 	        }
 	    }
 	    context.addServiceListener(new ServiceListener() {
@@ -42,7 +51,7 @@ public class DebugActivator implements BundleActivator {
 	                    ServiceReference sr = event.getServiceReference();
 	                    Object o = bundleContext.getService(sr);
 	                    if (o != null && o instanceof HttpService) {
-	                        registerServlet((HttpService) o);
+	                        registerServlets((HttpService) o);
 	                    }
 	                }
 	                catch (NamespaceException e) {
@@ -62,12 +71,17 @@ public class DebugActivator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
+	    servletNameMap.clear();
+	    packageAdmin = null;
+	    this.bundleContext = null;
 	}
 
-	private void registerServlet(HttpService httpService) throws ServletException, NamespaceException {
+	private void registerServlets(HttpService httpService) throws ServletException, NamespaceException {
 	    if (httpService != null)  {
 	        Dictionary params = new Hashtable();
-	        httpService.registerServlet("/debug", classLoaderServlet, params, null);
+	        for (Map.Entry<HttpServlet, String> entry : servletNameMap.entrySet()) {
+	            httpService.registerServlet(entry.getValue(), entry.getKey(), params, null);
+	        }
 	    }
 	}
 }
