@@ -5,8 +5,8 @@ Bundle-SymbolicName: org.protege.osgi.debug
 Bundle-Version: 1.0.0
 Bundle-Activator: org.protege.osgi.DebugActivator
 Bundle-Vendor: The Protege Team
-Import-Package: javax.servlet;version="2.4.0",
- javax.servlet.http;version="2.4.0",
+Import-Package: javax.servlet,
+ javax.servlet.http,
  org.osgi.framework,
- org.osgi.service.http;version="1.2.0",
- org.osgi.service.packageadmin;version="1.2.0"
+ org.osgi.service.http,
+ org.osgi.service.packageadmin
