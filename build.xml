@@ -43,6 +43,27 @@
       </java>
     </target>
 
+    <target name="protege.install" depends="jar">
+        <property environment="env"/>
+        <property name="protege.home" location="${env.PROTEGE_HOME}"/>
+        <fail message="PROEGE_HOME environment not set correctly">
+            <condition>
+                <not>
+                    <available file="${protege.home}/org.protege.editor.core.application.jar" type="file"/>
+                </not>
+            </condition>
+        </fail>
+        <copy todir="${protege.home}/plugins">
+            <fileset dir="osgi/equinox"
+                     includes="*.jar"
+                     excludes="org.eclipse.equinox.common*.jar,org.eclipse.osgi_*.jar"/>
+        </copy>
+        <copy todir="${protege.home}/plugins"
+              file="${dist}/${bundle}"/>
+        <delete dir = "${protege.home}/configuration/org.eclipse.core.runtime"/>
+        <delete dir = "${protege.home}/configuration/org.eclipse.osgi"/>
+    </target>
+
     <target name="clean">
       <delete dir="${build}"/>
     </target>
