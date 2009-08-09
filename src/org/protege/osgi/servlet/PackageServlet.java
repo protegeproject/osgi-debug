@@ -1,4 +1,4 @@
-package org.protege.osgi;
+package org.protege.osgi.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
