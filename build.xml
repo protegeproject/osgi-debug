@@ -40,10 +40,6 @@
 
     <target name="clean.osgi.state">
         <delete dir="${dist}/equinox/configuration/org.eclipse.osgi"/>
-        <delete>
-            <fileset dir="${dist}/equinox/configuration" 
-                     includes="*.log"/>
-        </delete>
     </target>
 
     <target name="dist" depends="jar, clean.osgi.state">

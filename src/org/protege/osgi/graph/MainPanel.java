@@ -22,6 +22,7 @@ import org.apache.commons.collections15.Transformer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
@@ -137,13 +138,35 @@ public class MainPanel extends JPanel {
     
     private class OSGiVertexPaintTransformer implements Transformer<Bundle, Paint> {
         public Paint transform(Bundle b) {
-            if (getOwningBundleFromClassInBundle(b) == null) {
+            if (classOrPackageBox.getSelectedIndex() == PACKAGE || 
+            		getOwningBundleFromClassInBundle(b) == null) {
                 return Color.RED;
             }
             else {
                 return Color.GREEN;
             }
         }
+    }
+    
+    private class OSGiEdgeTransformer implements Transformer<Edge, Paint> {
+    	public Paint transform(Edge edge) {
+    		String name = classOrPackageText.getText();
+    		if (classOrPackageBox.getSelectedIndex() == CLASS) {
+    			int index = name.lastIndexOf('.');
+    			if (index < 0) {
+    				name = "";
+    			}
+    			else  {
+    				name = name.substring(0, index);
+    			}
+    		}
+			for (ExportedPackage export : edge.getPackages()) {
+				if (export.getName().equals(name)) {
+					return Color.GREEN;
+				}
+			}
+			return Color.RED;
+    	}
     }
     
     
