@@ -7,6 +7,15 @@ Bundle-Activator: org.protege.osgi.DebugActivator
 Bundle-Vendor: The Protege Team
 Import-Package: javax.servlet,
  javax.servlet.http,
+ javax.swing,
+ javax.swing.border,
+ javax.swing.event,
  org.osgi.framework,
  org.osgi.service.http,
  org.osgi.service.packageadmin
+Bundle-ClassPath: .,
+ lib/jung-algorithms.jar,
+ lib/jung-api.jar,
+ lib/jung-graph-impl.jar,
+ lib/jung-visualization.jar,
+ lib/collections-generic.jar

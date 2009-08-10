@@ -19,18 +19,34 @@
                includeAntRuntime = "true">
             <classpath>
                 <fileset dir="${equinox}" includes="*.jar"/>
+            	<fileset dir="./lib"      includes="*.jar"/>
             </classpath>
         </javac>
     </target>
+	
+	<target name="copy.resources">
+		<mkdir dir="${build}/classes/lib"/>
+		<copy todir="${build}/classes/lib">
+			<fileset dir="./lib"/>
+		</copy>
+	</target>
 
-    <target name="jar" depends="compile">
+    <target name="jar" depends="compile, copy.resources">
         <jar basedir = "${classes}"
              destfile = "${dist}/${bundle}"
              manifest="./META-INF/MANIFEST.MF"/>
 
     </target>
 
-    <target name="dist" depends="jar">
+    <target name="clean.osgi.state">
+        <delete dir="${dist}/equinox/configuration/org.eclipse.osgi"/>
+        <delete>
+            <fileset dir="${dist}/equinox/configuration" 
+                     includes="*.log"/>
+        </delete>
+    </target>
+
+    <target name="dist" depends="jar, clean.osgi.state">
         <copy todir = "${dist}/equinox">
             <fileset dir = "./osgi/equinox"/>
         </copy>
@@ -40,6 +56,15 @@
     <target name="run" depends="dist">
       <java fork = "true" dir = "${dist}" jar = "${dist}/equinox/org.eclipse.osgi_3.3.1.R33x_v20070828.jar">
         <jvmarg value = "-Xmx1500M"/>
+      </java>
+    </target>
+
+    <target name="debug" depends="dist">
+      <java fork = "true" 
+            dir = "${dist}" 
+            jar = "${dist}/equinox/org.eclipse.osgi_3.3.1.R33x_v20070828.jar">
+          <jvmarg value = "-Xmx1500M"/>
+          <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=8500,server=y,suspend=y"/>
       </java>
     </target>
 
