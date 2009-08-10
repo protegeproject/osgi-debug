@@ -99,6 +99,7 @@ public class MainPanel extends JPanel {
         vv.setPreferredSize(new Dimension(950, 650));
         vv.getRenderContext().setVertexLabelTransformer(new OSGiVertexLabelRenderer());
         vv.getRenderContext().setVertexFillPaintTransformer(new OSGiVertexPaintTransformer());
+        vv.getRenderContext().setEdgeDrawPaintTransformer(new OSGiEdgeTransformer());
         canvas.add(vv);
     }
     
