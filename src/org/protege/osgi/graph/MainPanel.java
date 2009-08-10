@@ -66,7 +66,7 @@ public class MainPanel extends JPanel {
         JButton draw = new JButton("Draw");
         draw.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e) {
-               drawGraph();
+               canvas.repaint();
             } 
         });
         panel.add(draw);
@@ -97,8 +97,8 @@ public class MainPanel extends JPanel {
         BasicVisualizationServer<Bundle,Edge> vv = 
                   new BasicVisualizationServer<Bundle,Edge>(layout); 
         vv.setPreferredSize(new Dimension(950, 650));
-        vv.getRenderContext().setVertexLabelRenderer(new OSGiVertexLabelRenderer());
-        vv.getRenderContext().setVertexDrawPaintTransformer(new OSGiVertexPaintTransformer());
+        vv.getRenderContext().setVertexLabelTransformer(new OSGiVertexLabelRenderer());
+        vv.getRenderContext().setVertexFillPaintTransformer(new OSGiVertexPaintTransformer());
         canvas.add(vv);
     }
     
@@ -109,35 +109,29 @@ public class MainPanel extends JPanel {
         }
         try {
             Class c = b.loadClass(className);
-            return packages.getBundle(c);
+            Bundle owner = packages.getBundle(c);
+            if (owner == null) {
+                return context.getBundle(0);
+            }
+            else return owner;
         }
         catch (Throwable t) {
             return null;
         }
     }
     
-    private static class OSGiVertexLabelRenderer implements VertexLabelRenderer {
+    private static class OSGiVertexLabelRenderer implements Transformer<Bundle, String> {
         
-        public <T> Component getVertexLabelRendererComponent(JComponent parent,
-                                                             Object value,
-                                                             Font font,
-                                                             boolean isSelected, 
-                                                             T vertex) {
+        @SuppressWarnings("unchecked")
+        public String transform(Bundle vertex) {
             if (vertex instanceof Bundle) {
-                String name = getNiceName((Bundle) vertex);
-                JLabel label = new JLabel(name);
-                label.setFont(font);
-                return label;
+                Dictionary<String, String> headers = vertex.getHeaders();
+                String name = headers.get(Constants.BUNDLE_NAME);
+                return name == null ? vertex.getSymbolicName() : name;
             }
             return null;
         }
-        
-        @SuppressWarnings("unchecked")
-        private String getNiceName(Bundle b) {
-            Dictionary<String, String> headers = b.getHeaders();
-            String name = headers.get(Constants.BUNDLE_NAME);
-            return name == null ? b.getSymbolicName() : name;
-        }
+
     }
     
     private class OSGiVertexPaintTransformer implements Transformer<Bundle, Paint> {
