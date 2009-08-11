@@ -36,8 +36,11 @@ public class DebugActivator implements BundleActivator {
 	        servlets.initialize(context, packageAdmin);
 	    }
 	    catch (Throwable t) {
-	        log.error("Could not start servlet based debug", t);
+	        log.error("Could not start servlet based debug" + t);
 	        log.info("Trying swing based debug");
+                if (log.isDebugEnabled()) {
+                    log.debug("Exception caught", t);
+                }
 	    }
 	}
 	
@@ -49,7 +52,10 @@ public class DebugActivator implements BundleActivator {
 	            jung.initialize(context, packages);
 	        }
 	        catch (Throwable t) {
-	            log.error("Could not start swing based debug", t);
+	            log.error("Could not start swing based debug " + t);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Exception caught", t);
+                    }
 	        }
 	}
 
