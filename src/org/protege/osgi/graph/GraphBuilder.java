@@ -18,21 +18,29 @@ import edu.uci.ics.jung.graph.util.Pair;
 public class GraphBuilder {
     private BundleContext context;
     private PackageAdmin packages;
+    private String packageName;
     
-    public GraphBuilder(BundleContext context, PackageAdmin packages)  {
+    public GraphBuilder(BundleContext context, PackageAdmin packages, String packageName)  {
         this.context = context;
         this.packages = packages;
+        this.packageName = packageName;
     }
     
     public DirectedGraph<Bundle, Edge> getGraph() {
         DirectedSparseGraph<Bundle, Edge> graph = new DirectedSparseGraph<Bundle, Edge>();
         for (Bundle exporting : context.getBundles()) {
+            graph.addVertex(exporting);
             Map<Bundle, Set<ExportedPackage>> map = new HashMap<Bundle, Set<ExportedPackage>>();
             ExportedPackage[] exports = packages.getExportedPackages(exporting);
             if (exports == null) {
                 continue;
             }
             for (ExportedPackage export : exports) {
+                /*
+                if (packageName != null && !export.getName().equals(packageName)) {
+                    continue;
+                }
+                */
                 for (Bundle importing : export.getImportingBundles()) {
                     if (importing.equals(exporting)) {
                         continue;

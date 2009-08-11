@@ -15,6 +15,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.apache.commons.collections15.Predicate;
 import org.apache.commons.collections15.Transformer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -23,7 +24,8 @@ import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
@@ -58,20 +60,39 @@ public class MainPanel extends JPanel {
         panel.setLayout(new FlowLayout());
         String[] choices = { "Class", "Package" };
         classOrPackageBox = new JComboBox(choices);
+        classOrPackageBox.addActionListener(new ActionListener() {
+           public void actionPerformed(ActionEvent e) {
+               graphView.repaint();
+            } 
+        });
         panel.add(classOrPackageBox);
         
         classOrPackageText = new JTextField();
         JTextField sample = new JTextField("org.protege.osgi.debug.graph.MainPanel");
         classOrPackageText.setPreferredSize(sample.getPreferredSize());
-        panel.add(classOrPackageText);
-        
-        JButton draw = new JButton("Refresh");
-        draw.addActionListener(new ActionListener() {
+        classOrPackageText.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e) {
-               refresh();
+               graphView.repaint();
+               
             } 
         });
-        panel.add(draw);
+        panel.add(classOrPackageText);
+        
+        JButton refresh = new JButton("Refresh");
+        refresh.addActionListener(new ActionListener() {
+           public void actionPerformed(ActionEvent e) {
+               graphView.repaint();
+            } 
+        });
+        panel.add(refresh);
+        
+        JButton recalculate = new JButton("Recalculate");
+        recalculate.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                refresh();
+             } 
+         });
+         panel.add(recalculate);
         
         JButton clear = new JButton("Clear");
         clear.addActionListener(new ActionListener() {
@@ -94,7 +115,7 @@ public class MainPanel extends JPanel {
         panel.setLayout(new FlowLayout(FlowLayout.CENTER));
         
         layoutComboBox = new JComboBox(LayoutEnum.getNames());
-        layoutComboBox.setSelectedIndex(LayoutEnum.DIRECTED_ACYCLIC_GRAPH_LAYOUT.ordinal());
+        layoutComboBox.setSelectedIndex(LayoutEnum.FR_LAYOUT.ordinal());
         layoutComboBox.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e) {
                refresh();
@@ -112,6 +133,7 @@ public class MainPanel extends JPanel {
         graphView.getRenderContext().setVertexLabelTransformer(new OSGiVertexLabelRenderer());
         graphView.getRenderContext().setVertexFillPaintTransformer(new OSGiVertexPaintTransformer());
         graphView.getRenderContext().setEdgeDrawPaintTransformer(new OSGiEdgeTransformer());
+        graphView.getRenderContext().setEdgeArrowPredicate(new OSGiEdgeArrowPredicate());
         AbstractModalGraphMouse gm = new DefaultModalGraphMouse<Bundle, Edge>();
         graphView.setGraphMouse(gm);
     }
@@ -119,8 +141,8 @@ public class MainPanel extends JPanel {
     private Layout<Bundle, Edge> buildLayout() {
         int layoutIndex = layoutComboBox.getSelectedIndex();
         LayoutEnum le = LayoutEnum.values()[layoutIndex];
-        GraphBuilder builder = new GraphBuilder(context, packages);
-        DirectedGraph<Bundle, Edge> graph = builder.getGraph();
+        GraphBuilder builder = new GraphBuilder(context, packages, getPackageName());
+        Graph<Bundle, Edge> graph = builder.getGraph();
         Layout<Bundle, Edge> layout = le.buildLayout(graph);
         layout.setSize(new Dimension(900,600));
         return layout;
@@ -147,6 +169,23 @@ public class MainPanel extends JPanel {
         catch (Throwable t) {
             return null;
         }
+    }
+    
+    private String getPackageName() {
+        String name = classOrPackageText.getText();
+        if (name == null || name.equals("")) {
+            return null;
+        }
+        if (classOrPackageBox.getSelectedIndex() == CLASS) {
+            int index = name.lastIndexOf('.');
+            if (index < 0) {
+                name = "";
+            }
+            else  {
+                name = name.substring(0, index);
+            }
+        }
+        return name;
     }
     
     private static class OSGiVertexLabelRenderer implements Transformer<Bundle, String> {
@@ -183,24 +222,25 @@ public class MainPanel extends JPanel {
     
     private class OSGiEdgeTransformer implements Transformer<Edge, Paint> {
     	public Paint transform(Edge edge) {
-    		String name = classOrPackageText.getText();
-    		if (classOrPackageBox.getSelectedIndex() == CLASS) {
-    			int index = name.lastIndexOf('.');
-    			if (index < 0) {
-    				name = "";
-    			}
-    			else  {
-    				name = name.substring(0, index);
-    			}
-    		}
+    		String name = getPackageName();
+            if (name == null) {
+                return Color.BLACK;
+            }
 			for (ExportedPackage export : edge.getPackages()) {
 				if (export.getName().equals(name)) {
-					return Color.GREEN;
+					return Color.BLACK;
 				}
 			}
-			return Color.RED;
+			return Color.LIGHT_GRAY;
     	}
     }
     
+    private class OSGiEdgeArrowPredicate implements Predicate<Context<Graph<Bundle,Edge>,Edge>> {
+
+        public boolean evaluate(Context<Graph<Bundle, Edge>, Edge> arg0) {
+            return false;
+        }
+        
+    }
     
 }

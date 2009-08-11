@@ -10,7 +10,6 @@ Import-Package: javax.servlet;resolution:=optional,
  javax.swing;resolution:=optional,
  javax.swing.border;resolution:=optional,
  javax.swing.event;resolution:=optional,
- org.apache.log4j.Logger;resolution:=optional,
  org.osgi.framework,
  org.osgi.service.http;resolution:=optional,
  org.osgi.service.packageadmin

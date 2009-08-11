@@ -8,33 +8,27 @@ import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.RadialTreeLayout;
-import edu.uci.ics.jung.graph.DirectedGraph;
+import edu.uci.ics.jung.graph.Graph;
 
 public enum LayoutEnum {
     CIRCLE_LAYOUT("Circle Layout") {
-        public Layout<Bundle, Edge> buildLayout(DirectedGraph<Bundle, Edge> graph) { 
+        public Layout<Bundle, Edge> buildLayout(Graph<Bundle, Edge> graph) { 
             return new CircleLayout<Bundle, Edge>(graph); 
         }
     },
     DIRECTED_ACYCLIC_GRAPH_LAYOUT("Directed Acyclic Graph Layout") {
-        public Layout<Bundle, Edge> buildLayout(DirectedGraph<Bundle, Edge> graph) { 
+        public Layout<Bundle, Edge> buildLayout(Graph<Bundle, Edge> graph) { 
             return new DAGLayout<Bundle, Edge>(graph); 
         }        
     },
     FR_LAYOUT("Fruchterman-Reingold Layout") {
-        public Layout<Bundle, Edge> buildLayout(DirectedGraph<Bundle, Edge> graph) { 
+        public Layout<Bundle, Edge> buildLayout(Graph<Bundle, Edge> graph) { 
             return new FRLayout<Bundle, Edge>(graph); 
         }
     },
     MEYERS_LAYOUT("Meyer's Self-Organizing Layout") {
-        public Layout<Bundle, Edge> buildLayout(DirectedGraph<Bundle, Edge> graph) { 
+        public Layout<Bundle, Edge> buildLayout(Graph<Bundle, Edge> graph) { 
             return new ISOMLayout<Bundle, Edge>(graph); 
-        }
-    },
-    KK_LAYOUT("Kamada-Kawai Layout") {
-        public Layout<Bundle, Edge> buildLayout(DirectedGraph<Bundle, Edge> graph) { 
-            return new KKLayout<Bundle, Edge>(graph); 
         }
     }
     ;
@@ -48,7 +42,7 @@ public enum LayoutEnum {
         return name;
     }
     
-    public abstract Layout<Bundle, Edge> buildLayout(DirectedGraph<Bundle, Edge> graph);
+    public abstract Layout<Bundle, Edge> buildLayout(Graph<Bundle, Edge> graph);
     
     public static String[] getNames() {
         String[] names = new String[LayoutEnum.values().length];

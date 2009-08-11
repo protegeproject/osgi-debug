@@ -8,7 +8,7 @@ import org.protege.osgi.PackageViewer;
 
 public class MainFrame extends JFrame implements PackageViewer {
     public MainFrame() {
-        super("OSGi Debug Frame");
+        super("JUNG-based OSGi Debug Frame");
     }
     
     public void initialize(BundleContext context, PackageAdmin packages) {
