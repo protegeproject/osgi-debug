@@ -1,18 +1,19 @@
 package org.protege.osgi;
 
-import javax.swing.JFrame;
-
+import org.apache.log4j.Logger;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.log.LogService;
 import org.osgi.service.packageadmin.PackageAdmin;
-import org.protege.osgi.graph.MainPanel;
+import org.protege.osgi.graph.MainFrame;
 import org.protege.osgi.servlet.Servlets;
 
 public class DebugActivator implements BundleActivator {
-    private PackageAdmin packageAdmin;
-    private Servlets servlets;
-    private boolean doSwing = true;
+    private static Logger log = Logger.getLogger(DebugActivator.class);
+    private PackageViewer servlets;
+    private PackageViewer jung;
+    
 
 	/*
 	 * (non-Javadoc)
@@ -21,16 +22,35 @@ public class DebugActivator implements BundleActivator {
 	public void start(BundleContext context) throws Exception {
 	    ServiceReference packageReference = context.getServiceReference(PackageAdmin.class.getName());
 	    if (packageReference != null) {
-	        packageAdmin = (PackageAdmin) context.getService(packageReference);
-	        servlets = new  Servlets(context, packageAdmin);
-	        if (doSwing) {
-	            JFrame frame = new JFrame("OSGi Debug Frame");
-	            MainPanel panel = new MainPanel(context, packageAdmin);
-	            frame.setContentPane(panel);
-	            frame.pack();
-	            frame.setVisible(true);
-	        }
+	        PackageAdmin packageAdmin = (PackageAdmin) context.getService(packageReference);
+	        startServlets(context, packageAdmin);
+	        startJung(context, packageAdmin);
 	    }
+	}
+	
+	private void startServlets(BundleContext context, 
+	                           PackageAdmin packageAdmin) {
+	    try {
+	        Class<?> c = Class.forName("org.protege.osgi.servlet.Servlets");
+	        servlets = (PackageViewer) c.newInstance();
+	        servlets.initialize(context, packageAdmin);
+	    }
+	    catch (Throwable t) {
+	        log.error("Could not start servlet based debug", t);
+	        log.info("Trying swing based debug");
+	    }
+	}
+	
+	private void startJung(BundleContext context,
+	                       PackageAdmin packages) {
+	       try {
+	            Class<?> c = Class.forName("org.protege.osgi.graph.MainFrame");
+	            jung = (PackageViewer) c.newInstance();
+	            jung.initialize(context, packages);
+	        }
+	        catch (Throwable t) {
+	            log.error("Could not start swing based debug", t);
+	        }
 	}
 
 	/*
@@ -38,7 +58,6 @@ public class DebugActivator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
-	    packageAdmin = null;
 	    servlets.dispose();
 	}
 }

@@ -2,10 +2,8 @@ package org.protege.osgi.graph;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +12,6 @@ import java.util.Dictionary;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -25,11 +22,11 @@ import org.osgi.framework.Constants;
 import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
-import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.renderers.VertexLabelRenderer;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 
 public class MainPanel extends JPanel {
     private static final int CLASS = 0;
@@ -40,15 +37,19 @@ public class MainPanel extends JPanel {
     
     private JComboBox classOrPackageBox;
     private JTextField classOrPackageText;
-    private JPanel canvas;
+    private VisualizationViewer<Bundle,Edge> graphView;
+    private JComboBox layoutComboBox;
 
     public MainPanel(BundleContext context, PackageAdmin packages) {
         this.context = context;
         this.packages = packages;
         
         setLayout(new BorderLayout());
+        
         add(createHeader(), BorderLayout.NORTH);
+        add(createFooter(), BorderLayout.SOUTH);
         add(createMainDocument(), BorderLayout.CENTER);
+
     }
     
     private JComponent createHeader() {
@@ -64,10 +65,10 @@ public class MainPanel extends JPanel {
         classOrPackageText.setPreferredSize(sample.getPreferredSize());
         panel.add(classOrPackageText);
         
-        JButton draw = new JButton("Draw");
+        JButton draw = new JButton("Refresh");
         draw.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e) {
-               canvas.repaint();
+               refresh();
             } 
         });
         panel.add(draw);
@@ -76,7 +77,7 @@ public class MainPanel extends JPanel {
         clear.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 classOrPackageText.setText("");
-                System.out.println("Clear and draw everything.");
+                refresh();
             }
         });
         panel.add(clear);
@@ -84,24 +85,50 @@ public class MainPanel extends JPanel {
     }
     
     private JComponent createMainDocument() {
-        canvas = new JPanel();
         drawGraph();
-        return canvas;
+        return graphView;
+    }
+    
+    private JComponent createFooter() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        
+        layoutComboBox = new JComboBox(LayoutEnum.getNames());
+        layoutComboBox.setSelectedIndex(LayoutEnum.DIRECTED_ACYCLIC_GRAPH_LAYOUT.ordinal());
+        layoutComboBox.addActionListener(new ActionListener() {
+           public void actionPerformed(ActionEvent e) {
+               refresh();
+            } 
+        });
+        panel.add(layoutComboBox);
+        
+        return panel;
     }
     
     private void drawGraph() {
-        canvas.removeAll();
+        Layout<Bundle, Edge> layout = buildLayout();
+        graphView = new VisualizationViewer<Bundle,Edge>(layout); 
+        graphView.setPreferredSize(new Dimension(950, 650));
+        graphView.getRenderContext().setVertexLabelTransformer(new OSGiVertexLabelRenderer());
+        graphView.getRenderContext().setVertexFillPaintTransformer(new OSGiVertexPaintTransformer());
+        graphView.getRenderContext().setEdgeDrawPaintTransformer(new OSGiEdgeTransformer());
+        AbstractModalGraphMouse gm = new DefaultModalGraphMouse<Bundle, Edge>();
+        graphView.setGraphMouse(gm);
+    }
+    
+    private Layout<Bundle, Edge> buildLayout() {
+        int layoutIndex = layoutComboBox.getSelectedIndex();
+        LayoutEnum le = LayoutEnum.values()[layoutIndex];
         GraphBuilder builder = new GraphBuilder(context, packages);
         DirectedGraph<Bundle, Edge> graph = builder.getGraph();
-        Layout<Bundle, Edge> layout = new CircleLayout<Bundle, Edge>(graph);
+        Layout<Bundle, Edge> layout = le.buildLayout(graph);
         layout.setSize(new Dimension(900,600));
-        BasicVisualizationServer<Bundle,Edge> vv = 
-                  new BasicVisualizationServer<Bundle,Edge>(layout); 
-        vv.setPreferredSize(new Dimension(950, 650));
-        vv.getRenderContext().setVertexLabelTransformer(new OSGiVertexLabelRenderer());
-        vv.getRenderContext().setVertexFillPaintTransformer(new OSGiVertexPaintTransformer());
-        vv.getRenderContext().setEdgeDrawPaintTransformer(new OSGiEdgeTransformer());
-        canvas.add(vv);
+        return layout;
+    }
+    
+    private void refresh() {
+        graphView.setGraphLayout(buildLayout());
+        graphView.repaint();
     }
     
     private Bundle getOwningBundleFromClassInBundle(Bundle b) {
@@ -138,12 +165,18 @@ public class MainPanel extends JPanel {
     
     private class OSGiVertexPaintTransformer implements Transformer<Bundle, Paint> {
         public Paint transform(Bundle b) {
+            Bundle owningBundle;
             if (classOrPackageBox.getSelectedIndex() == PACKAGE || 
-            		getOwningBundleFromClassInBundle(b) == null) {
+            		(owningBundle = getOwningBundleFromClassInBundle(b)) == null) {
                 return Color.RED;
             }
             else {
-                return Color.GREEN;
+                if (b.equals(owningBundle)) {
+                    return Color.BLUE;
+                }
+                else {
+                    return Color.GREEN;
+                }
             }
         }
     }

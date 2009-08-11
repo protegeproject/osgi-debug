@@ -5,17 +5,19 @@ Bundle-SymbolicName: org.protege.osgi.debug
 Bundle-Version: 1.0.0
 Bundle-Activator: org.protege.osgi.DebugActivator
 Bundle-Vendor: The Protege Team
-Import-Package: javax.servlet,
- javax.servlet.http,
- javax.swing,
- javax.swing.border,
- javax.swing.event,
+Import-Package: javax.servlet;resolution:=optional,
+ javax.servlet.http;resolution:=optional,
+ javax.swing;resolution:=optional,
+ javax.swing.border;resolution:=optional,
+ javax.swing.event;resolution:=optional,
+ org.apache.log4j.Logger;resolution:=optional,
  org.osgi.framework,
- org.osgi.service.http,
+ org.osgi.service.http;resolution:=optional,
  org.osgi.service.packageadmin
 Bundle-ClassPath: .,
  lib/jung-algorithms.jar,
  lib/jung-api.jar,
  lib/jung-graph-impl.jar,
  lib/jung-visualization.jar,
- lib/collections-generic.jar
+ lib/collections-generic.jar,
+ lib/log4j.jar
