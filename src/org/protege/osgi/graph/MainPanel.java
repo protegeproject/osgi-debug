@@ -230,7 +230,7 @@ public class MainPanel extends JPanel {
             }
 			for (ExportedPackage export : edge.getPackages()) {
 				if (export.getName().equals(name)) {
-					return Color.BLACK;
+					return Color.RED;
 				}
 			}
 			return Color.LIGHT_GRAY;
