@@ -4,10 +4,7 @@ import org.apache.log4j.Logger;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.log.LogService;
 import org.osgi.service.packageadmin.PackageAdmin;
-import org.protege.osgi.graph.MainFrame;
-import org.protege.osgi.servlet.Servlets;
 
 public class DebugActivator implements BundleActivator {
     private static Logger log = Logger.getLogger(DebugActivator.class);

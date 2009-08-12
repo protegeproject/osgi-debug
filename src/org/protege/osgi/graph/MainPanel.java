@@ -34,9 +34,9 @@ public class MainPanel extends JPanel {
     private static final int CLASS = 0;
     private static final int PACKAGE = 1;
     
+    private JPanel footer;
     private BundleContext context;
     private PackageAdmin packages;
-    
     private JComboBox classOrPackageBox;
     private JTextField classOrPackageText;
     private VisualizationViewer<Bundle,Edge> graphView;
@@ -49,9 +49,9 @@ public class MainPanel extends JPanel {
         setLayout(new BorderLayout());
         
         add(createHeader(), BorderLayout.NORTH);
-        add(createFooter(), BorderLayout.SOUTH);
         add(createMainDocument(), BorderLayout.CENTER);
-
+        add(createFooter(), BorderLayout.SOUTH);
+ 
     }
     
     private JComponent createHeader() {
@@ -111,22 +111,24 @@ public class MainPanel extends JPanel {
     }
     
     private JComponent createFooter() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        
+        footer = new JPanel();
+        footer.setLayout(new FlowLayout(FlowLayout.CENTER));  
+
+        footer.add(layoutComboBox);
+        footer.add(((AbstractModalGraphMouse)graphView.getGraphMouse()).getModeComboBox());
+
+        return footer;
+    }
+    
+    private void drawGraph() {
         layoutComboBox = new JComboBox(LayoutEnum.getNames());
         layoutComboBox.setSelectedIndex(LayoutEnum.FR_LAYOUT.ordinal());
         layoutComboBox.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e) {
                refresh();
             } 
-        });
-        panel.add(layoutComboBox);
+        }); // added to the footer later
         
-        return panel;
-    }
-    
-    private void drawGraph() {
         Layout<Bundle, Edge> layout = buildLayout();
         graphView = new VisualizationViewer<Bundle,Edge>(layout); 
         graphView.setPreferredSize(new Dimension(950, 650));
