@@ -155,22 +155,21 @@ public class MainPanel extends JPanel {
         graphView.repaint();
     }
     
-    private Bundle getOwningBundleFromClassInBundle(Bundle b) {
+    private Class<?> getCurrentClass(Bundle b) {
         String className = classOrPackageText.getText();
         if (className == null || className.equals("")) {
             return null;
         }
         try {
-            Class c = b.loadClass(className);
-            Bundle owner = packages.getBundle(c);
-            if (owner == null) {
-                return context.getBundle(0);
-            }
-            else return owner;
+            return b.loadClass(className);
         }
         catch (Throwable t) {
             return null;
         }
+    }
+    
+    private Bundle getOwningBundle(Class<?> c) {
+        return packages.getBundle(c);
     }
     
     private String getPackageName() {
@@ -206,18 +205,18 @@ public class MainPanel extends JPanel {
     
     private class OSGiVertexPaintTransformer implements Transformer<Bundle, Paint> {
         public Paint transform(Bundle b) {
-            Bundle owningBundle;
-            if (classOrPackageBox.getSelectedIndex() == PACKAGE || 
-            		(owningBundle = getOwningBundleFromClassInBundle(b)) == null) {
+            Class<?> currentClass;
+            if (classOrPackageBox.getSelectedIndex() == PACKAGE) {
                 return Color.RED;
             }
+            else if ((currentClass = getCurrentClass(b)) == null) {
+                return Color.RED;
+            }
+            else if (b.equals(getOwningBundle(currentClass))) {
+                return Color.BLUE;
+            }
             else {
-                if (b.equals(owningBundle)) {
-                    return Color.BLUE;
-                }
-                else {
-                    return Color.GREEN;
-                }
+                return Color.GREEN;
             }
         }
     }

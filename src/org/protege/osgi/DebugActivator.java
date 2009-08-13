@@ -1,13 +1,11 @@
 package org.protege.osgi;
 
-import org.apache.log4j.Logger;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 public class DebugActivator implements BundleActivator {
-    private static Logger log = Logger.getLogger(DebugActivator.class);
     private PackageViewer servlets;
     private PackageViewer jung;
     
@@ -20,40 +18,42 @@ public class DebugActivator implements BundleActivator {
 	    ServiceReference packageReference = context.getServiceReference(PackageAdmin.class.getName());
 	    if (packageReference != null) {
 	        PackageAdmin packageAdmin = (PackageAdmin) context.getService(packageReference);
-	        startServlets(context, packageAdmin);
-	        startJung(context, packageAdmin);
+	        boolean servletsStarted = startServlets(context, packageAdmin);
+	        boolean jungStarted = startJung(context, packageAdmin);
+	        if (!servletsStarted && !jungStarted) {
+	            context.getBundle().stop();
+	        }
 	    }
 	}
 	
-	private void startServlets(BundleContext context, 
-	                           PackageAdmin packageAdmin) {
+	private boolean startServlets(BundleContext context, 
+	                              PackageAdmin packageAdmin) {
+	    boolean success = false;
 	    try {
 	        Class<?> c = Class.forName("org.protege.osgi.servlet.Servlets");
 	        servlets = (PackageViewer) c.newInstance();
 	        servlets.initialize(context, packageAdmin);
+	        success = true;
 	    }
 	    catch (Throwable t) {
-	        log.error("Could not start servlet based debug" + t);
-	        log.info("Trying swing based debug");
-                if (log.isDebugEnabled()) {
-                    log.debug("Exception caught", t);
-                }
+	        System.out.println("Could not start servlet based debug" + t);
 	    }
+	    return success;
 	}
 	
-	private void startJung(BundleContext context,
-	                       PackageAdmin packages) {
-	       try {
-	            Class<?> c = Class.forName("org.protege.osgi.graph.MainFrame");
-	            jung = (PackageViewer) c.newInstance();
-	            jung.initialize(context, packages);
-	        }
-	        catch (Throwable t) {
-	            log.error("Could not start swing based debug " + t);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Exception caught", t);
-                    }
-	        }
+	private boolean startJung(BundleContext context,
+	                          PackageAdmin packages) {
+	    boolean success = false;
+	    try {
+	        Class<?> c = Class.forName("org.protege.osgi.graph.MainFrame");
+	        jung = (PackageViewer) c.newInstance();
+	        jung.initialize(context, packages);
+	        success = true;
+	    }
+	    catch (Throwable t) {
+	        System.out.println("Could not start swing based debug " + t);
+	    }
+	    return success;
 	}
 
 	/*

@@ -12,13 +12,11 @@ Import-Package: javax.servlet;resolution:=optional,
  javax.swing.event;resolution:=optional,
  org.osgi.framework,
  org.osgi.service.http;resolution:=optional,
- org.osgi.service.packageadmin,
- org.apache.log4j
+ org.osgi.service.packageadmin
 Export-Package: org.apache.log4j
 Bundle-ClassPath: .,
  lib/jung-algorithms.jar,
  lib/jung-api.jar,
  lib/jung-graph-impl.jar,
  lib/jung-visualization.jar,
- lib/collections-generic.jar,
- lib/log4j.jar
+ lib/collections-generic.jar
