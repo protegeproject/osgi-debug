@@ -154,9 +154,14 @@ public class MainPanel extends JPanel {
         graphView.setGraphLayout(buildLayout());
         graphView.repaint();
     }
+
+    private String getCurrentClassName() {
+        String className = classOrPackageText.getText();
+        return className.replace('/','.');
+    }
     
     private Class<?> getCurrentClass(Bundle b) {
-        String className = classOrPackageText.getText();
+        String className = getCurrentClassName();
         if (className == null || className.equals("")) {
             return null;
         }
@@ -173,7 +178,7 @@ public class MainPanel extends JPanel {
     }
     
     private String getPackageName() {
-        String name = classOrPackageText.getText();
+        String name = getCurrentClassName();
         if (name == null || name.equals("")) {
             return null;
         }
