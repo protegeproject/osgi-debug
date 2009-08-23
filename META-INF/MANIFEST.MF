@@ -10,6 +10,7 @@ Import-Package: javax.servlet;resolution:=optional,
  javax.swing;resolution:=optional,
  javax.swing.border;resolution:=optional,
  javax.swing.event;resolution:=optional,
+ org.apache.log4j,
  org.osgi.framework,
  org.osgi.service.http;resolution:=optional,
  org.osgi.service.packageadmin
@@ -19,4 +20,5 @@ Bundle-ClassPath: .,
  lib/jung-api.jar,
  lib/jung-graph-impl.jar,
  lib/jung-visualization.jar,
- lib/collections-generic.jar
+ lib/collections-generic.jar,
+ lib/log4j.jar

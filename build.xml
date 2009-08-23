@@ -19,23 +19,24 @@
                includeAntRuntime = "true">
             <classpath>
                 <fileset dir="${equinox}" includes="*.jar"/>
-            	<fileset dir="./lib"      includes="*.jar"/>
+                <fileset dir="./lib"      includes="*.jar"/>
             </classpath>
         </javac>
     </target>
-	
-	<target name="copy.resources">
-		<mkdir dir="${build}/classes/lib"/>
-		<copy todir="${build}/classes/lib">
-			<fileset dir="./lib"/>
-		</copy>
-	</target>
+        
+    <target name="copy.resources">
+        <mkdir dir="${build}/classes/lib"/>
+        <copy todir="${build}/classes/lib">
+            <fileset dir="./lib"/>
+        </copy>
+        <copy todir="${classes}"
+              file="./log4j.properties"/>
+    </target>
 
     <target name="jar" depends="compile, copy.resources">
         <jar basedir = "${classes}"
              destfile = "${dist}/${bundle}"
              manifest="./META-INF/MANIFEST.MF"/>
-
     </target>
 
     <target name="clean.osgi.state">
