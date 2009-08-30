@@ -20,6 +20,8 @@ import org.apache.commons.collections15.Transformer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
@@ -52,6 +54,16 @@ public class MainPanel extends JPanel {
         add(createMainDocument(), BorderLayout.CENTER);
         add(createFooter(), BorderLayout.SOUTH);
  
+        context.addFrameworkListener(new FrameworkListener() {
+            
+            public void frameworkEvent(FrameworkEvent event) {
+                if (event.getType() == FrameworkEvent.PACKAGES_REFRESHED 
+                        || event.getType() == FrameworkEvent.STARTED
+                        || event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
+                    refresh();
+                }
+            }
+        });
     }
     
     private JComponent createHeader() {

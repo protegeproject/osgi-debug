@@ -24,7 +24,6 @@ public class DebugActivator implements BundleActivator {
 	        boolean jungStarted = startJung(context, packageAdmin);
 	        if (!servletsStarted && !jungStarted) {
 	            log.warn("Could not start OSGi debug bundle");
-	            context.getBundle().stop();
 	        }
 	    }
 	}

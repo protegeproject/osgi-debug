@@ -36,11 +36,9 @@ public class GraphBuilder {
                 continue;
             }
             for (ExportedPackage export : exports) {
-                /*
-                if (packageName != null && !export.getName().equals(packageName)) {
+                if (export.getImportingBundles() == null) {
                     continue;
                 }
-                */
                 for (Bundle importing : export.getImportingBundles()) {
                     if (importing.equals(exporting)) {
                         continue;
