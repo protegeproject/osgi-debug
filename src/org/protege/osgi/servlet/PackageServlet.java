@@ -139,10 +139,8 @@ public class PackageServlet extends HttpServlet {
                         && (importers.length > 1 || !importers[0].equals(b))) {
                     out.println(" -- This package is imported by the following bundles: <UL>");
                     for (Bundle importer : importers) {
-                        if (!importer.equals(b)) {
-                            out.println("<li> ");
-                            printBundle(out, importer, "");
-                        }
+                        out.println("<li> ");
+                        printBundle(out, importer, "");
                     }
                     out.println("</UL>");
                 }

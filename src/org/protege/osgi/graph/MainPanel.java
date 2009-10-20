@@ -222,11 +222,44 @@ public class MainPanel extends JPanel {
     
     private class OSGiVertexPaintTransformer implements Transformer<Bundle, Paint> {
         public Paint transform(Bundle b) {
-            Class<?> currentClass;
             if (classOrPackageBox.getSelectedIndex() == PACKAGE) {
+                return packageTransform(b);
+            }
+            else {
+                return classTransform(b);
+            }
+        }
+        
+        private Paint packageTransform(Bundle b) {
+            String packageName = getPackageName();
+            if (packageName == null) {
                 return Color.RED;
             }
-            else if ((currentClass = getCurrentClass(b)) == null) {
+            ExportedPackage[] exports = packages.getExportedPackages(packageName);
+            if (exports == null) {
+                return Color.RED;
+            }
+            for (ExportedPackage export : exports) {
+                if (b == export.getExportingBundle()) {
+                    return Color.BLUE;
+                }
+            }
+            for (ExportedPackage export : exports) {
+                if (export.getImportingBundles() == null) {
+                    continue;
+                }
+                for (Bundle importer : export.getImportingBundles()) {
+                    if (b == importer) {
+                        return Color.GREEN;
+                    }
+                }
+            }
+            return Color.RED;
+        }
+        
+        private Paint classTransform(Bundle b) {
+            Class<?> currentClass;
+            if ((currentClass = getCurrentClass(b)) == null) {
                 return Color.RED;
             }
             else if (b.equals(getOwningBundle(currentClass))) {
