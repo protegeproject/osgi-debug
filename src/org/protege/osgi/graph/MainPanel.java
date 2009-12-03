@@ -8,11 +8,15 @@ import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Dictionary;
+import java.util.TreeSet;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import org.apache.commons.collections15.Predicate;
@@ -85,10 +89,17 @@ public class MainPanel extends JPanel {
         classOrPackageText.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent e) {
                graphView.repaint();
-               
             } 
         });
         panel.add(classOrPackageText);
+        
+        JButton browse = new JButton("Browse Packages");
+        browse.addActionListener(new ActionListener() {
+           public void actionPerformed(ActionEvent e) {
+               createBrowsePackagesDialog();
+            } 
+        });
+        panel.add(browse);
         
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(new ActionListener() {
@@ -98,7 +109,7 @@ public class MainPanel extends JPanel {
         });
         panel.add(refresh);
         
-        JButton recalculate = new JButton("Recalculate");
+        JButton recalculate = new JButton("Rebuild Graph");
         recalculate.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 refresh();
@@ -106,14 +117,6 @@ public class MainPanel extends JPanel {
          });
          panel.add(recalculate);
         
-        JButton clear = new JButton("Clear");
-        clear.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                classOrPackageText.setText("");
-                refresh();
-            }
-        });
-        panel.add(clear);
         return panel;
     }
     
@@ -130,6 +133,24 @@ public class MainPanel extends JPanel {
         footer.add(((AbstractModalGraphMouse)graphView.getGraphMouse()).getModeComboBox());
 
         return footer;
+    }
+    
+    private void createBrowsePackagesDialog() {
+        JDialog dialog = new PackageBrowserDialog(context, packages) {
+            
+            @Override
+            protected void packageSelected(String packageName) {
+                classOrPackageText.setText(packageName);
+                graphView.repaint();
+                setVisible(false);
+                classOrPackageText.requestFocus();
+                // doesn't behave exactly how I want
+                // setSelectionStart(...) etc doesn't seem to help.
+                classOrPackageText.setCaretPosition(packageName.length());
+            }
+        };
+        dialog.pack();
+        dialog.setVisible(true);
     }
     
     private void drawGraph() {
