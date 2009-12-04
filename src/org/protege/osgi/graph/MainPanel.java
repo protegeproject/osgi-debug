@@ -47,6 +47,7 @@ public class MainPanel extends JPanel {
     private JTextField classOrPackageText;
     private VisualizationViewer<Bundle,Edge> graphView;
     private JComboBox layoutComboBox;
+    private JDialog packageBrowser;
 
     public MainPanel(BundleContext context, PackageAdmin packages) {
         this.context = context;
@@ -136,23 +137,22 @@ public class MainPanel extends JPanel {
     }
     
     private void createBrowsePackagesDialog() {
-        JDialog dialog = new PackageBrowserDialog(context, packages) {
-            
-            @Override
-            protected void packageSelected(String packageName) {
-                classOrPackageText.setText(packageName);
-                graphView.repaint();
-                setVisible(false);
-                classOrPackageText.requestFocus();
-                // doesn't behave exactly how I want
-                // setSelectionStart(...) etc doesn't seem to help.
-                classOrPackageText.setCaretPosition(packageName.length());
-            }
-        };
-        dialog.pack();
-        dialog.setVisible(true);
+        if (packageBrowser == null) {
+            packageBrowser = new PackageBrowserDialog(context, packages) {
+
+                @Override
+                protected void packageSelected(String packageName) {
+                    classOrPackageText.setText(packageName);
+                    graphView.repaint();
+                    classOrPackageText.requestFocus();
+                    classOrPackageText.setCaretPosition(packageName.length());
+                }
+            };
+            packageBrowser.pack();
+        }
+        packageBrowser.setVisible(true);
     }
-    
+
     private void drawGraph() {
         layoutComboBox = new JComboBox(LayoutEnum.getNames());
         layoutComboBox.setSelectedIndex(LayoutEnum.FR_LAYOUT.ordinal());
