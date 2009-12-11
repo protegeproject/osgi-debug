@@ -6,8 +6,14 @@
     <property name="equinox" location="./osgi/equinox"/>
     <property name="src" location="./src"/>
     <property name="bundle" value="org.protege.osgi.debug.jar"/>
+    <property name = "manifest"          location = "${build}/manifest.mf"/>
+
+   <property file="version.properties"/>
 
     <target name="init">
+        <tstamp>
+            <format property="build.time" pattern="yyyy-MM-dd-hh:mm"/>
+        </tstamp>
         <mkdir dir="${classes}"/>
         <mkdir dir="${dist}"/>
     </target>
@@ -33,10 +39,21 @@
               file="./log4j.properties"/>
     </target>
 
-    <target name="jar" depends="compile, copy.resources">
+    <target name="build.manifest">
+        <copy tofile="${manifest}" 
+              file="META-INF/MANIFEST.MF" overwrite="true"/>
+        <manifest file="${manifest}" 
+                  mode = "update">
+            <attribute name="Built-By" value = "${user.name}"/>
+            <attribute name="Bundle-Version" value="${major.version}.${minor.version}.${micro.version}.${build.time}"/>
+        </manifest>
+    </target>
+
+
+    <target name="jar" depends="compile, copy.resources,build.manifest">
         <jar basedir = "${classes}"
              destfile = "${dist}/${bundle}"
-             manifest="./META-INF/MANIFEST.MF"/>
+             manifest="${manifest}"/>
     </target>
 
     <target name="clean.osgi.state">
