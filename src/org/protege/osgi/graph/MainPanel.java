@@ -8,15 +8,12 @@ import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Dictionary;
-import java.util.TreeSet;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import org.apache.commons.collections15.Predicate;
@@ -37,6 +34,7 @@ import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 
 public class MainPanel extends JPanel {
+    private static final long serialVersionUID = -6188855593855501050L;
     private static final int CLASS = 0;
     private static final int PACKAGE = 1;
     
@@ -139,6 +137,7 @@ public class MainPanel extends JPanel {
     private void createBrowsePackagesDialog() {
         if (packageBrowser == null) {
             packageBrowser = new PackageBrowserDialog(context, packages) {
+                private static final long serialVersionUID = -6596713244703376792L;
 
                 @Override
                 protected void packageSelected(String packageName) {

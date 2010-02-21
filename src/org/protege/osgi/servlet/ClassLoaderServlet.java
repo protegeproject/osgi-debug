@@ -89,6 +89,7 @@ public class ClassLoaderServlet extends HttpServlet {
         out.println("</FORM>");
     }
     
+    @SuppressWarnings("unchecked")
     private void doResults(PrintWriter out, String className) {
         out.println("<P>");
         Map<Class, Set<Bundle>> loadableClassMap = new HashMap<Class, Set<Bundle>>();
@@ -126,6 +127,7 @@ public class ClassLoaderServlet extends HttpServlet {
     }
     
     
+    @SuppressWarnings("unchecked")
     private void displayClass(PrintWriter out, Class c, Set<Bundle> bundles) {
         Bundle loadingBundle = packageAdmin.getBundle(c);
         if (loadingBundle == null) {
