@@ -21,6 +21,10 @@ import org.osgi.service.packageadmin.ExportedPackage;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 public abstract class PackageBrowserDialog extends JDialog {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 6347220213399845867L;
     private JList packageList;
     
     public PackageBrowserDialog(BundleContext context, PackageAdmin packages) {
