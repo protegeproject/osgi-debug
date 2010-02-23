@@ -27,6 +27,7 @@ public class Servlets implements PackageViewer {
         servletNameMap.put(new MainServlet(), MainServlet.PATH);
         servletNameMap.put(new ClassLoaderServlet(context, packageAdmin), ClassLoaderServlet.PATH);
         servletNameMap.put(new PackageServlet(context, packageAdmin), PackageServlet.PATH);
+        servletNameMap.put(new LoggingServlet(), LoggingServlet.PATH);
         ServiceReference [] serviceReferences = context.getServiceReferences(HttpService.class.getName(), null);
         if (serviceReferences != null) {
             for (ServiceReference sr : serviceReferences) {

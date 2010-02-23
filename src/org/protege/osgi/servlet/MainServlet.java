@@ -24,6 +24,7 @@ public class MainServlet extends HttpServlet {
         out.println("<HEADING>Debug Utilities</HEADING>");
         out.println("<P><A HREF=\"" + ClassLoaderServlet.PATH + "\">Class Loading Debug</A>");
         out.println("<P><A HREF=\"" + PackageServlet.PATH + "\">Package Debug</A>");
+        out.println("<P><A HREF=\"" + LoggingServlet.PATH + "\">Logging Level Servlet</A>");
         out.println("</BODY></HTML>");
     }
 
