@@ -1,8 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <project name = "Class Loading Debugger" default = "run" basedir = ".">
+    <property file="local.properties"/>
     <property name="build" location="./build"/>
     <property name="classes" location="${build}/classes"/>
-    <property name="dist" location="${build}/dist"/>
+    <property name="dist" location="${build}"/>
     <property name="equinox" location="./osgi/equinox"/>
     <property name="src" location="./src"/>
     <property name="bundle" value="org.protege.osgi.debug.jar"/>
