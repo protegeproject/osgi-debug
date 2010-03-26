@@ -1,9 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
-<project name = "Class Loading Debugger" default = "run" basedir = ".">
+<project name = "Class Loading Debugger" default = "jar" basedir = ".">
     <property file="local.properties"/>
     <property name="build"        location="./build"/>
     <property name="classes"      location="${build}/classes"/>
-    <property name="dist"         location="${build}"/>
+    <property name="bundle.dir"   location="${build}"/>
     <property name="equinox"      location="./osgi/equinox"/>
     <property name="src"          location="./src"/>
     <property name="bundle"       value="org.protege.osgi.debug.jar"/>
@@ -16,7 +16,7 @@
             <format property="build.time" pattern="yyyy-MM-dd-hhmm"/>
         </tstamp>
         <mkdir dir="${classes}"/>
-        <mkdir dir="${dist}"/>
+        <mkdir dir="${bundle.dir}"/>
     </target>
 
     <target name="compile" depends="init">
@@ -53,34 +53,8 @@
 
     <target name="jar" depends="compile, copy.resources,build.manifest">
         <jar basedir = "${classes}"
-             destfile = "${dist}/${bundle}"
+             destfile = "${bundle.dir}/${bundle}"
              manifest="${manifest}"/>
-    </target>
-
-    <target name="clean.osgi.state">
-        <delete dir="${dist}/equinox/configuration/org.eclipse.osgi"/>
-    </target>
-
-    <target name="dist" depends="jar, clean.osgi.state">
-        <copy todir = "${dist}/equinox">
-            <fileset dir = "./osgi/equinox"/>
-        </copy>
-        <copy todir = "${dist}/equinox" file="${dist}/${bundle}"/>
-    </target>
-
-    <target name="run" depends="dist">
-      <java fork = "true" dir = "${dist}" jar = "${dist}/equinox/org.eclipse.osgi_3.3.1.R33x_v20070828.jar">
-        <jvmarg value = "-Xmx1500M"/>
-      </java>
-    </target>
-
-    <target name="debug" depends="dist">
-      <java fork = "true" 
-            dir = "${dist}" 
-            jar = "${dist}/equinox/org.eclipse.osgi_3.3.1.R33x_v20070828.jar">
-          <jvmarg value = "-Xmx1500M"/>
-          <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=8500,server=y,suspend=y"/>
-      </java>
     </target>
 
     <target name="protege.install" depends="jar">
