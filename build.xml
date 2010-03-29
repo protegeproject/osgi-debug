@@ -60,10 +60,10 @@
     <target name="protege.install" depends="jar">
         <property environment="env"/>
         <property name="protege.home" location="${env.PROTEGE_HOME}"/>
-        <fail message="PROEGE_HOME environment not set correctly">
+        <fail message="PROTEGE_HOME environment not set correctly">
             <condition>
                 <not>
-                    <available file="${protege.home}/org.protege.editor.core.application.jar" type="file"/>
+                    <available file="${protege.home}/bundles/org.protege.editor.core.application.jar" type="file"/>
                 </not>
             </condition>
         </fail>
