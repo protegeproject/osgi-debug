@@ -7,7 +7,6 @@ import java.awt.FlowLayout;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Dictionary;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -16,11 +15,9 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.apache.commons.collections15.Predicate;
 import org.apache.commons.collections15.Transformer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.service.packageadmin.ExportedPackage;
@@ -28,10 +25,10 @@ import org.osgi.service.packageadmin.PackageAdmin;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.GraphMouseAdapter;
 
 public class MainPanel extends JPanel {
     private static final long serialVersionUID = -6188855593855501050L;
@@ -170,6 +167,8 @@ public class MainPanel extends JPanel {
         graphView.getRenderContext().setEdgeArrowPredicate(new OSGiEdgeArrowPredicate());
         AbstractModalGraphMouse gm = new DefaultModalGraphMouse<Bundle, Edge>();
         graphView.setGraphMouse(gm);
+        graphView.setVertexToolTipTransformer(new OSGiToolTipTransformer());
+        graphView.addGraphMouseListener(new OSGiGraphMouseListener());
     }
     
     private Layout<Bundle, Edge> buildLayout() {
@@ -224,20 +223,6 @@ public class MainPanel extends JPanel {
             }
         }
         return name;
-    }
-    
-    private static class OSGiVertexLabelRenderer implements Transformer<Bundle, String> {
-        
-        @SuppressWarnings("unchecked")
-        public String transform(Bundle vertex) {
-            if (vertex instanceof Bundle) {
-                Dictionary<String, String> headers = vertex.getHeaders();
-                String name = headers.get(Constants.BUNDLE_NAME);
-                return name == null ? vertex.getSymbolicName() : name;
-            }
-            return null;
-        }
-
     }
     
     private class OSGiVertexPaintTransformer implements Transformer<Bundle, Paint> {
@@ -304,14 +289,6 @@ public class MainPanel extends JPanel {
 			}
 			return Color.LIGHT_GRAY;
     	}
-    }
-    
-    private class OSGiEdgeArrowPredicate implements Predicate<Context<Graph<Bundle,Edge>,Edge>> {
-
-        public boolean evaluate(Context<Graph<Bundle, Edge>, Edge> arg0) {
-            return false;
-        }
-        
     }
     
 }
