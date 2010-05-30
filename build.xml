@@ -73,7 +73,7 @@
                      excludes="org.eclipse.equinox.common*.jar,org.eclipse.osgi_*.jar"/>
         </copy>
         <copy todir="${protege.home}/plugins"
-              file="${dist}/${bundle}"/>
+              file="${bundle.dir}/${bundle}"/>
         <delete dir = "${protege.home}/configuration/org.eclipse.core.runtime"/>
         <delete dir = "${protege.home}/configuration/org.eclipse.osgi"/>
     </target>
