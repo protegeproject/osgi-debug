@@ -47,7 +47,7 @@ public abstract class PackageBrowserDialog extends JDialog {
         select.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-
+                userSelectedSomething();
             }
         });
         JPanel south = new JPanel();
