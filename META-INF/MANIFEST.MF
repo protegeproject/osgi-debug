@@ -30,3 +30,4 @@ Bundle-ClassPath: .,
  lib/jung-visualization.jar,
  lib/collections-generic.jar,
  lib/log4j.jar
+No-Plugin-XML: True

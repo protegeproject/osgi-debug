@@ -1,5 +1,6 @@
 package org.protege.osgi.graph;
 
+import java.awt.Point;
 import javax.swing.JFrame;
 
 import org.osgi.framework.BundleContext;
@@ -16,6 +17,7 @@ public class MainFrame extends JFrame implements PackageViewer {
     public void initialize(BundleContext context, PackageAdmin packages) {
         MainPanel panel = new MainPanel(context, packages);
         setContentPane(panel);
+        setLocation(new Point(40,40));
         pack();
         setVisible(true);
     }
