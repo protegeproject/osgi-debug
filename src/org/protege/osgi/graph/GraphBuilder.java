@@ -2,14 +2,16 @@ package org.protege.osgi.graph;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
@@ -17,12 +19,10 @@ import edu.uci.ics.jung.graph.util.Pair;
 
 public class GraphBuilder {
     private BundleContext context;
-    private PackageAdmin packages;
     private String packageName;
     
-    public GraphBuilder(BundleContext context, PackageAdmin packages, String packageName)  {
+    public GraphBuilder(BundleContext context, String packageName)  {
         this.context = context;
-        this.packages = packages;
         this.packageName = packageName;
     }
     
@@ -30,28 +30,25 @@ public class GraphBuilder {
         DirectedSparseGraph<Bundle, Edge> graph = new DirectedSparseGraph<Bundle, Edge>();
         for (Bundle exporting : context.getBundles()) {
             graph.addVertex(exporting);
-            Map<Bundle, Set<ExportedPackage>> map = new HashMap<Bundle, Set<ExportedPackage>>();
-            ExportedPackage[] exports = packages.getExportedPackages(exporting);
+            BundleWiring wiring = exporting.adapt(BundleWiring.class);
+            Map<Bundle, Set<BundleWire>> map = new HashMap<Bundle, Set<BundleWire>>();
+            List<BundleWire> exports = wiring.getProvidedWires(BundleRevision.PACKAGE_NAMESPACE);
             if (exports == null) {
                 continue;
             }
-            for (ExportedPackage export : exports) {
-                if (export.getImportingBundles() == null) {
+            for (BundleWire export : exports) {
+                Bundle importing = export.getRequirerWiring().getBundle();
+                if (importing.equals(exporting)) {
                     continue;
                 }
-                for (Bundle importing : export.getImportingBundles()) {
-                    if (importing.equals(exporting)) {
-                        continue;
-                    }
-                    Set<ExportedPackage> wires = map.get(importing);
-                    if (wires == null)  {
-                        wires = new HashSet<ExportedPackage>();
-                        map.put(importing, wires);
-                    }
-                    wires.add(export);
+                Set<BundleWire> wires = map.get(importing);
+                if (wires == null)  {
+                    wires = new HashSet<BundleWire>();
+                    map.put(importing, wires);
                 }
+                wires.add(export);
             }
-            for (Entry<Bundle, Set<ExportedPackage>> entry : map.entrySet()) {
+            for (Entry<Bundle, Set<BundleWire>> entry : map.entrySet()) {
                 graph.addEdge(new Edge(exporting,entry.getKey(), entry.getValue()), 
                               new Pair<Bundle>(exporting, entry.getKey()));
             }

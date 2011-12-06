@@ -1,5 +1,6 @@
 package org.protege.osgi.servlet;
 
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -16,22 +17,21 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.protege.osgi.PackageViewer;
 
 public class Servlets implements PackageViewer {
     private Map<HttpServlet, String> servletNameMap = new HashMap<HttpServlet, String>();
     
-    public void initialize(final BundleContext context, PackageAdmin packageAdmin) 
+    public void initialize(final BundleContext context) 
     throws InvalidSyntaxException, ServletException, NamespaceException {
         servletNameMap.put(new MainServlet(), MainServlet.PATH);
-        servletNameMap.put(new ClassLoaderServlet(context, packageAdmin), ClassLoaderServlet.PATH);
-        servletNameMap.put(new PackageServlet(context, packageAdmin), PackageServlet.PATH);
+        servletNameMap.put(new ClassLoaderServlet(context), ClassLoaderServlet.PATH);
+        servletNameMap.put(new PackageServlet(context), PackageServlet.PATH);
         servletNameMap.put(new LoggingServlet(), LoggingServlet.PATH);
-        ServiceReference [] serviceReferences = context.getServiceReferences(HttpService.class.getName(), null);
+        Collection<ServiceReference<HttpService>> serviceReferences = context.getServiceReferences(HttpService.class, null);
         if (serviceReferences != null) {
-            for (ServiceReference sr : serviceReferences) {
-                HttpService service = (HttpService) context.getService(sr);
+            for (ServiceReference<HttpService> sr : serviceReferences) {
+                HttpService service = context.getService(sr);
                 registerServlets(service);
             }
         }

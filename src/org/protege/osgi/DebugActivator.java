@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 public class DebugActivator implements BundleActivator {
     private Logger log = Logger.getLogger(DebugActivator.class);
@@ -16,25 +15,20 @@ public class DebugActivator implements BundleActivator {
 	 * (non-Javadoc)
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
-	public void start(BundleContext context) throws Exception {
-	    ServiceReference packageReference = context.getServiceReference(PackageAdmin.class.getName());
-	    if (packageReference != null) {
-	        PackageAdmin packageAdmin = (PackageAdmin) context.getService(packageReference);
-	        boolean servletsStarted = startServlets(context, packageAdmin);
-	        boolean jungStarted = startJung(context, packageAdmin);
-	        if (!servletsStarted && !jungStarted) {
-	            log.warn("Could not start OSGi debug bundle");
-	        }
-	    }
-	}
+    public void start(BundleContext context) throws Exception {
+        boolean servletsStarted = startServlets(context);
+        boolean jungStarted = startJung(context);
+        if (!servletsStarted && !jungStarted) {
+            log.warn("Could not start OSGi debug bundle");
+        }
+    }
 	
-	private boolean startServlets(BundleContext context, 
-	                              PackageAdmin packageAdmin) {
+	private boolean startServlets(BundleContext context) {
 	    boolean success = false;
 	    try {
 	        Class<?> c = Class.forName("org.protege.osgi.servlet.Servlets");
 	        servlets = (PackageViewer) c.newInstance();
-	        servlets.initialize(context, packageAdmin);
+	        servlets.initialize(context);
 	        log.info("Servlet based OSGi debug services started");
 	        success = true;
 	    }
@@ -47,13 +41,12 @@ public class DebugActivator implements BundleActivator {
 	    return success;
 	}
 	
-	private boolean startJung(BundleContext context,
-	                          PackageAdmin packages) {
+	private boolean startJung(BundleContext context) {
 	    boolean success = false;
 	    try {
 	        Class<?> c = Class.forName("org.protege.osgi.graph.MainFrame");
 	        jung = (PackageViewer) c.newInstance();
-	        jung.initialize(context, packages);
+	        jung.initialize(context);
 	        log.info("Grahical based OSGi debug services started");
 	        success = true;
 	    }

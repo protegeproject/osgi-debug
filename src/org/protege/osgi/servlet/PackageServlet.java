@@ -3,6 +3,7 @@ package org.protege.osgi.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -14,8 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 public class PackageServlet extends HttpServlet {
     private static final long serialVersionUID = -2083051888153213291L;
@@ -25,11 +27,9 @@ public class PackageServlet extends HttpServlet {
     public static final String BUNDLE_LIST_MENU = "BundleList";
     
     private BundleContext context;
-    private PackageAdmin packageAdmin;
     
-    public PackageServlet(BundleContext context, PackageAdmin packageAdmin) {
+    public PackageServlet(BundleContext context) {
         this.context = context;
-        this.packageAdmin = packageAdmin;
     }
     
     protected void doGet(HttpServletRequest request, 
@@ -91,28 +91,19 @@ public class PackageServlet extends HttpServlet {
     }
 
     private void doImports(PrintWriter out, Bundle b) {
-        Set<ExportedPackage> imports = new TreeSet<ExportedPackage>(new Comparator<ExportedPackage>() {
+        Set<BundleWire> imports = new TreeSet<BundleWire>(new Comparator<BundleWire>() {
 
-            public int compare(ExportedPackage p1, ExportedPackage p2) {
-                return p1.getName().compareTo(p2.getName());
+            public int compare(BundleWire p1, BundleWire p2) {
+                String p1Name = (String) p1.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                String p2Name = (String) p1.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                return p1Name.compareTo(p2Name);
             }
             
         });
-        for (Bundle exporter : context.getBundles()) {
-            if (exporter.equals(b)) continue;
-            ExportedPackage[] exports = packageAdmin.getExportedPackages(exporter);
-            if (exports != null) {
-                for (ExportedPackage export : exports)  {
-                    Bundle[] importers = export.getImportingBundles();
-                    if (importers != null) {
-                        for (Bundle importer : importers) {
-                            if (b.equals(importer)) {
-                                imports.add(export);
-                            }
-                        }
-                    }
-                }
-            }
+        BundleWiring wiring = b.adapt(BundleWiring.class);
+        List<BundleWire> importsList = wiring.getRequiredWires(BundleRevision.PACKAGE_NAMESPACE);
+        if (importsList != null) {
+            imports.addAll(importsList);
         }
         out.println("<P><B>Imports</B><P>");
         if (imports.isEmpty()) {
@@ -120,30 +111,25 @@ public class PackageServlet extends HttpServlet {
         }
         else {
             out.println("<UL>");
-            for (ExportedPackage p : imports) {
-                out.println("<li> " + p.getName() + " imported from bundle ");
-                printBundle(out, p.getExportingBundle(), "");
+            for (BundleWire p : imports) {
+                String packageName = (String) p.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                out.println("<li> " + packageName + " imported from bundle ");
+                printBundle(out, p.getProviderWiring().getBundle(), "");
             }
             out.println("</UL>");
         }
     }
     
     private void doExports(PrintWriter out, Bundle b) {
-        ExportedPackage [] packages = packageAdmin.getExportedPackages(b);
+        BundleWiring wiring = b.adapt(BundleWiring.class);
+        List<BundleWire> packages = wiring.getProvidedWires(BundleRevision.PACKAGE_NAMESPACE);
         out.println("<P><B>Exports</B><P>");
-        if (packages != null && packages.length > 0) {
-            for (ExportedPackage p : packages) {
-                out.println("<li> " + p.getName());
-                Bundle [] importers = p.getImportingBundles();
-                if (importers != null && importers.length > 0
-                        && (importers.length > 1 || !importers[0].equals(b))) {
-                    out.println(" -- This package is imported by the following bundles: <UL>");
-                    for (Bundle importer : importers) {
-                        out.println("<li> ");
-                        printBundle(out, importer, "");
-                    }
-                    out.println("</UL>");
-                }
+        if (packages != null && packages.size() > 0) {
+            for (BundleWire p : packages) {
+                String packageName = (String) p.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                out.println("<li> " + packageName);
+                Bundle importer = p.getRequirerWiring().getBundle();
+                printBundle(out, importer, "");
             }
             out.println("</UL>");
         } else {

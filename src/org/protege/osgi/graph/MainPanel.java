@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -20,15 +21,16 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.GraphMouseAdapter;
 
 public class MainPanel extends JPanel {
     private static final long serialVersionUID = -6188855593855501050L;
@@ -37,17 +39,14 @@ public class MainPanel extends JPanel {
     
     private JPanel footer;
     private BundleContext context;
-    private PackageAdmin packages;
     private JComboBox classOrPackageBox;
     private JTextField classOrPackageText;
     private VisualizationViewer<Bundle,Edge> graphView;
     private JComboBox layoutComboBox;
     private JDialog packageBrowser;
 
-    public MainPanel(BundleContext context, PackageAdmin packages) {
-        this.context = context;
-        this.packages = packages;
-        
+    public MainPanel(BundleContext context) {
+        this.context = context;        
         setLayout(new BorderLayout());
         
         add(createHeader(), BorderLayout.NORTH);
@@ -133,7 +132,7 @@ public class MainPanel extends JPanel {
     
     private void createBrowsePackagesDialog() {
         if (packageBrowser == null) {
-            packageBrowser = new PackageBrowserDialog(context, packages) {
+            packageBrowser = new PackageBrowserDialog(context) {
                 private static final long serialVersionUID = -6596713244703376792L;
 
                 @Override
@@ -174,7 +173,7 @@ public class MainPanel extends JPanel {
     private Layout<Bundle, Edge> buildLayout() {
         int layoutIndex = layoutComboBox.getSelectedIndex();
         LayoutEnum le = LayoutEnum.values()[layoutIndex];
-        GraphBuilder builder = new GraphBuilder(context, packages, getPackageName());
+        GraphBuilder builder = new GraphBuilder(context, getPackageName());
         Graph<Bundle, Edge> graph = builder.getGraph();
         Layout<Bundle, Edge> layout = le.buildLayout(graph);
         layout.setSize(new Dimension(900,600));
@@ -205,7 +204,7 @@ public class MainPanel extends JPanel {
     }
     
     private Bundle getOwningBundle(Class<?> c) {
-        return packages.getBundle(c);
+        return FrameworkUtil.getBundle(c);
     }
     
     private String getPackageName() {
@@ -236,27 +235,25 @@ public class MainPanel extends JPanel {
         }
         
         private Paint packageTransform(Bundle b) {
+            BundleWiring wiring = b.adapt(BundleWiring.class);
             String packageName = getPackageName();
-            if (packageName == null) {
+            if (packageName == null || wiring == null) {
                 return Color.RED;
             }
-            ExportedPackage[] exports = packages.getExportedPackages(packageName);
-            if (exports == null) {
-                return Color.RED;
-            }
-            for (ExportedPackage export : exports) {
-                if (b == export.getExportingBundle()) {
-                    return Color.BLUE;
-                }
-            }
-            for (ExportedPackage export : exports) {
-                if (export.getImportingBundles() == null) {
-                    continue;
-                }
-                for (Bundle importer : export.getImportingBundles()) {
-                    if (b == importer) {
-                        return Color.GREEN;
+            List<BundleWire> exports = wiring.getProvidedWires(BundleRevision.PACKAGE_NAMESPACE);
+            if (exports != null) {
+                for (BundleWire export : exports) {
+                    String exportedPackage = (String) export.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                    if (packageName.equals(exportedPackage)) {
+                        return Color.BLUE;
                     }
+                }
+            }
+            List<BundleWire> imports = wiring.getRequiredWires(BundleRevision.PACKAGE_NAMESPACE);
+            for (BundleWire imported : imports) {
+                String importedPackage = (String) imported.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                if (packageName.equals(importedPackage)) {
+                    return Color.GREEN;
                 }
             }
             return Color.RED;
@@ -282,8 +279,9 @@ public class MainPanel extends JPanel {
             if (name == null) {
                 return Color.BLACK;
             }
-			for (ExportedPackage export : edge.getPackages()) {
-				if (export.getName().equals(name)) {
+			for (BundleWire export : edge.getPackages()) {
+			    String exportedPackage = (String) export.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+				if (name.equals(exportedPackage)) {
 					return Color.RED;
 				}
 			}

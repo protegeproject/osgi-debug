@@ -17,8 +17,9 @@ import javax.swing.JScrollPane;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 public abstract class PackageBrowserDialog extends JDialog {
     /**
@@ -27,8 +28,8 @@ public abstract class PackageBrowserDialog extends JDialog {
     private static final long serialVersionUID = 6347220213399845867L;
     private JList packageList;
     
-    public PackageBrowserDialog(BundleContext context, PackageAdmin packages) {
-        packageList = new JList(getPackageNames(context, packages));
+    public PackageBrowserDialog(BundleContext context) {
+        packageList = new JList(getPackageNames(context));
         packageList.addMouseListener(new MouseAdapter() {
            public void mouseClicked(MouseEvent e) {
                if (e.getClickCount() > 1) {
@@ -66,22 +67,13 @@ public abstract class PackageBrowserDialog extends JDialog {
         setPreferredSize(new Dimension(350, 350));
     }
     
-    private Object[] getPackageNames(BundleContext context, PackageAdmin packages) {
+    private Object[] getPackageNames(BundleContext context) {
         TreeSet<String> packageNames = new TreeSet<String>();
         for (Bundle b : context.getBundles()) {
-            ExportedPackage[] exports = packages.getExportedPackages(b);
-            if (exports == null) {
-                continue;
-            }
-            for (ExportedPackage p : exports) {
-                Bundle[] importers = p.getImportingBundles();
-                if (importers == null || importers.length == 0) {
-                    continue;
-                }
-                if (importers.length == 1 && importers[0] == b) {
-                    continue;
-                }
-                packageNames.add(p.getName());
+            BundleWiring wiring = b.adapt(BundleWiring.class);
+            for (BundleWire wire : wiring.getProvidedWires(BundleRevision.PACKAGE_NAMESPACE)) {
+                String packageName = (String) wire.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                packageNames.add(packageName);
             }
         }
         Object[] objects = new Object[packageNames.size()];

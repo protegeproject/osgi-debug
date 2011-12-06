@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.FrameworkUtil;
 
 public class ClassLoaderServlet extends HttpServlet {
     private static final long serialVersionUID = -4969594574389053166L;
@@ -24,11 +24,9 @@ public class ClassLoaderServlet extends HttpServlet {
     public static final String CLASS_NAME_FIELD = "ClassName";
 
     private BundleContext context;
-    private PackageAdmin packageAdmin;
     
-    public ClassLoaderServlet(BundleContext context, PackageAdmin packageAdmin) {
+    public ClassLoaderServlet(BundleContext context) {
         this.context = context;
-        this.packageAdmin = packageAdmin;
     }
     
     protected void doGet(HttpServletRequest request, 
@@ -129,7 +127,7 @@ public class ClassLoaderServlet extends HttpServlet {
     
     @SuppressWarnings("unchecked")
     private void displayClass(PrintWriter out, Class c, Set<Bundle> bundles) {
-        Bundle loadingBundle = packageAdmin.getBundle(c);
+        Bundle loadingBundle = FrameworkUtil.getBundle(c);
         if (loadingBundle == null) {
             out.println("Found Class " + c + " not associated with any bundle");
         }
