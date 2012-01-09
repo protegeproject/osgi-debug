@@ -3,13 +3,13 @@ package org.protege.osgi;
 import org.apache.log4j.Logger;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 
 public class DebugActivator implements BundleActivator {
-    private Logger log = Logger.getLogger(DebugActivator.class);
+    private static final Logger log = Logger.getLogger(DebugActivator.class);
     
-    private PackageViewer servlets;
-    private PackageViewer jung;   
+    public static final String PROTEGE_APPLICATION = "org.protege.editor.core.application";
+    
+    private PackageViewer servlets; 
 
 	/*
 	 * (non-Javadoc)
@@ -41,14 +41,17 @@ public class DebugActivator implements BundleActivator {
 	    return success;
 	}
 	
-	private boolean startJung(BundleContext context) {
+	public static boolean startJung(BundleContext context) {
 	    boolean success = false;
+	    PackageViewer jung;  
 	    try {
-	        Class<?> c = Class.forName("org.protege.osgi.graph.MainFrame");
-	        jung = (PackageViewer) c.newInstance();
-	        jung.initialize(context);
-	        log.info("Grahical based OSGi debug services started");
-	        success = true;
+	    	if (!isProtege(context)) {
+	    		Class<?> c = Class.forName("org.protege.osgi.graph.MainFrame");
+	    		jung = (PackageViewer) c.newInstance();
+	    		jung.initialize(context);
+	    		log.info("Grahical based OSGi debug services started");
+	    		success = true;
+	    	}
 	    }
 	    catch (Throwable t) {
 	        log.info("Could not start swing based debug " + t);
@@ -57,6 +60,10 @@ public class DebugActivator implements BundleActivator {
 	        }
 	    }
 	    return success;
+	}
+	
+	private static boolean isProtege(BundleContext context) {
+		return context.getBundle(PROTEGE_APPLICATION) != null;
 	}
 
 	/*
