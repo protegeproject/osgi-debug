@@ -38,6 +38,8 @@
         </copy>
         <copy todir="${classes}"
               file="./log4j.properties"/>
+    	<copy todir="${classes}"
+    	      file="./plugin.xml"/>
     </target>
 
     <target name="build.manifest">
@@ -57,25 +59,27 @@
              manifest="${manifest}"/>
     </target>
 
+    <target name="install" depends="jar">
+      <copy todir="${build}/osgi">
+        <fileset dir="osgi/equinox"/>
+      </copy>
+      <copy todir="${build}/osgi"
+    	    file="${bundle.dir}/${bundle}"/>
+    </target>
+
     <target name="protege.install" depends="jar">
         <property environment="env"/>
         <property name="protege.home" location="${env.PROTEGE_HOME}"/>
+        <property file="${protege.home}/build.properties"/>
         <fail message="PROTEGE_HOME environment not set correctly">
             <condition>
                 <not>
-                    <available file="${protege.home}/bundles/org.protege.editor.core.application.jar" type="file"/>
+                    <available file="${protege.common}/org.protege.editor.core.application.jar" type="file"/>
                 </not>
             </condition>
         </fail>
-        <copy todir="${protege.home}/plugins">
-            <fileset dir="osgi/equinox"
-                     includes="*.jar"
-                     excludes="org.eclipse.equinox.common*.jar,org.eclipse.osgi_*.jar"/>
-        </copy>
-        <copy todir="${protege.home}/plugins"
+        <copy todir="${protege.plugins}"
               file="${bundle.dir}/${bundle}"/>
-        <delete dir = "${protege.home}/configuration/org.eclipse.core.runtime"/>
-        <delete dir = "${protege.home}/configuration/org.eclipse.osgi"/>
     </target>
 
     <target name="clean">
