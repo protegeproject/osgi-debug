@@ -86,6 +86,14 @@
               file="${bundle.dir}/${bundle}"/>
     </target>
 
+    <target name="protege.install.servlets">
+        <copy todir="${protege.plugins}">
+            <fileset dir="osgi/equinox"
+                     includes="*.jar"
+                     excludes="org.eclipse.equinox.common*.jar,org.eclipse.osgi*.jar"/>
+        </copy>
+    </target>
+
     <target name="clean">
       <delete dir="${build}"/>
     </target>
