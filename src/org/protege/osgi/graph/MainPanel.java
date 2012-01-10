@@ -22,6 +22,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
@@ -255,6 +256,16 @@ public class MainPanel extends JPanel {
                 if (packageName.equals(importedPackage)) {
                     return Color.GREEN;
                 }
+            }
+            List<BundleWire> required = wiring.getRequiredWires(BundleRevision.BUNDLE_NAMESPACE);
+            for (BundleWire requirement : required) {
+            	BundleWiring packageProvider = requirement.getProviderWiring();
+            	for (BundleCapability capability : packageProvider.getCapabilities(BundleRevision.PACKAGE_NAMESPACE)) {
+                    String exportedPackage = (String) capability.getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                    if (packageName.equals(exportedPackage)) {
+                    	return Color.GREEN;
+                    }
+            	}
             }
             return Color.RED;
         }
