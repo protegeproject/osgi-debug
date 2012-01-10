@@ -10,8 +10,7 @@ public class ProtegeMenu extends ProtegeAction {
 
 	@Override
 	public void initialise() throws Exception {
-		BundleContext context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
-		DebugActivator.startJung(context);
+
 	}
 
 	@Override
@@ -21,7 +20,8 @@ public class ProtegeMenu extends ProtegeAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-
+		BundleContext context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
+		DebugActivator.startJung(context);
 	}
 
 }
