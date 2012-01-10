@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+    <extension id="DebugClassLoader"
+               point="org.protege.editor.core.application.EditorKitMenuAction">
+        <name value="Debug Class Loading..."/>
+        <class value="org.protege.osgi.ProtegeMenu"/>
+        <toolTip value="Displays a graphical representation of the classes imported and exported by bundles."/>
+        <path value="org.protege.editor.owl.menu.tools/SlotZ-A"/>
+        <editorKitId value="any"/>
+    </extension>
+
+</plugin>
