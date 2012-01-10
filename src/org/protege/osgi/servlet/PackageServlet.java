@@ -95,7 +95,7 @@ public class PackageServlet extends HttpServlet {
 
             public int compare(BundleWire p1, BundleWire p2) {
                 String p1Name = (String) p1.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
-                String p2Name = (String) p1.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+                String p2Name = (String) p2.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
                 return p1Name.compareTo(p2Name);
             }
             

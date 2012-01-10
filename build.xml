@@ -1,6 +1,10 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <project name = "Class Loading Debugger" default = "jar" basedir = ".">
     <property file="local.properties"/>
+    <property environment="env"/>
+    <property name="protege.home" location="${env.PROTEGE_HOME}"/>
+    <property file="${protege.home}/build.properties"/>
+
     <property name="build"        location="./build"/>
     <property name="classes"      location="${build}/classes"/>
     <property name="bundle.dir"   location="${build}"/>
@@ -8,6 +12,9 @@
     <property name="src"          location="./src"/>
     <property name="bundle"       value="org.protege.osgi.debug.jar"/>
     <property name="manifest"     location = "${build}/manifest.mf"/>
+
+    <property name="protege.common" location="${protege.home}/bundles"/>
+    <property name="protege.core"   location="${protege.common}/org.protege.editor.core.application.jar"/>
 
    <property file="version.properties"/>
 
@@ -17,6 +24,13 @@
         </tstamp>
         <mkdir dir="${classes}"/>
         <mkdir dir="${bundle.dir}"/>
+        <fail message="PROTEGE_HOME environment not set correctly">
+            <condition>
+                <not>
+                    <available file="${protege.core}" type="file"/>
+                </not>
+            </condition>
+        </fail>
     </target>
 
     <target name="compile" depends="init">
@@ -27,6 +41,7 @@
             <classpath>
                 <fileset dir="${equinox}" includes="*.jar"/>
                 <fileset dir="./lib"      includes="*.jar"/>
+                <pathelement location="${protege.core}"/>
             </classpath>
         </javac>
     </target>
@@ -68,16 +83,6 @@
     </target>
 
     <target name="protege.install" depends="jar">
-        <property environment="env"/>
-        <property name="protege.home" location="${env.PROTEGE_HOME}"/>
-        <property file="${protege.home}/build.properties"/>
-        <fail message="PROTEGE_HOME environment not set correctly">
-            <condition>
-                <not>
-                    <available file="${protege.common}/org.protege.editor.core.application.jar" type="file"/>
-                </not>
-            </condition>
-        </fail>
         <copy todir="${protege.plugins}"
               file="${bundle.dir}/${bundle}"/>
     </target>
