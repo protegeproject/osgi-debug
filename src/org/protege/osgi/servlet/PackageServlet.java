@@ -19,6 +19,11 @@ import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 
+/**
+ * Debug this some more - especially check out the logic where bundles are being required by other bundles.
+ * @author tredmond
+ *
+ */
 public class PackageServlet extends HttpServlet {
     private static final long serialVersionUID = -2083051888153213291L;
     
@@ -85,12 +90,14 @@ public class PackageServlet extends HttpServlet {
         if (b != null) {
             out.println("Information for bundle ");
             printBundle(out, b, "");
-            doImports(out, b);
-            doExports(out, b);
+            doPackageImports(out, b);
+            doBundleImports(out, b);
+            doPackageExports(out, b);
+            doBundleExports(out, b);
         }
     }
 
-    private void doImports(PrintWriter out, Bundle b) {
+    private void doPackageImports(PrintWriter out, Bundle b) {
         Set<BundleWire> imports = new TreeSet<BundleWire>(new Comparator<BundleWire>() {
 
             public int compare(BundleWire p1, BundleWire p2) {
@@ -105,9 +112,9 @@ public class PackageServlet extends HttpServlet {
         if (importsList != null) {
             imports.addAll(importsList);
         }
-        out.println("<P><B>Imports</B><P>");
+        out.println("<P><B>Package Imports</B><P>");
         if (imports.isEmpty()) {
-            out.println("No imports");
+            out.println("No package imports");
         }
         else {
             out.println("<UL>");
@@ -120,7 +127,36 @@ public class PackageServlet extends HttpServlet {
         }
     }
     
-    private void doExports(PrintWriter out, Bundle b) {
+    private void doBundleImports(PrintWriter out, Bundle b) {
+        Set<BundleWire> imports = new TreeSet<BundleWire>(new Comparator<BundleWire>() {
+
+            public int compare(BundleWire p1, BundleWire p2) {
+                String p1Name = p1.getProviderWiring().getBundle().getSymbolicName();
+                String p2Name =  p2.getProviderWiring().getBundle().getSymbolicName();
+                return p1Name.compareTo(p2Name);
+            }
+            
+        });
+        BundleWiring wiring = b.adapt(BundleWiring.class);
+        List<BundleWire> importsList = wiring.getRequiredWires(BundleRevision.BUNDLE_NAMESPACE);
+        if (importsList != null) {
+            imports.addAll(importsList);
+        }
+        out.println("<P><B>Required Bundle Imports</B><P>");
+        if (imports.isEmpty()) {
+            out.println("Doesn't require any bundles (good thing too).");
+        }
+        else {
+            out.println("<UL>");
+            for (BundleWire p : imports) {
+                out.println("<li> Requires bundle ");
+                printBundle(out, p.getProviderWiring().getBundle(), "");
+            }
+            out.println("</UL>");
+        }
+    }
+    
+    private void doPackageExports(PrintWriter out, Bundle b) {
         BundleWiring wiring = b.adapt(BundleWiring.class);
         List<BundleWire> packages = wiring.getProvidedWires(BundleRevision.PACKAGE_NAMESPACE);
         out.println("<P><B>Exports</B><P>");
@@ -134,6 +170,22 @@ public class PackageServlet extends HttpServlet {
             out.println("</UL>");
         } else {
             out.println("No exports.");
+        }
+    }
+    
+    private void doBundleExports(PrintWriter out, Bundle b) {
+        BundleWiring wiring = b.adapt(BundleWiring.class);
+        List<BundleWire> requirerers = wiring.getProvidedWires(BundleRevision.BUNDLE_NAMESPACE);
+        out.println("<P><B>Bundle Required by</B><P>");
+        if (requirerers != null && requirerers.size() > 0) {
+            for (BundleWire requiring : requirerers) {
+                out.println("<li>Required by ");
+                Bundle importer = requiring.getRequirerWiring().getBundle();
+                printBundle(out, importer, "");
+            }
+            out.println("</UL>");
+        } else {
+            out.println("No bundles require this bundle (good thing too).");
         }
     }
     

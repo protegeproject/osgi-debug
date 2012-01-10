@@ -11,9 +11,9 @@ import org.osgi.framework.wiring.BundleWire;
 public class Edge {
     private Bundle importer;
     private Bundle exporter;
-    private Set<BundleWire> packages = new HashSet<BundleWire>();
+    private Set<String> packages = new HashSet<String>();
     
-    public Edge(Bundle exporter, Bundle importer, Set<BundleWire> packages) {
+    public Edge(Bundle exporter, Bundle importer, Set<String> packages) {
         this.importer = importer;
         this.exporter = exporter;
         this.packages = packages;
@@ -27,7 +27,7 @@ public class Edge {
         return exporter;
     }
 
-    public Set<BundleWire> getPackages() {
+    public Set<String> getPackages() {
         return Collections.unmodifiableSet(packages);
     }
     

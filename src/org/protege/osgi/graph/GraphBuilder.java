@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
@@ -30,29 +31,53 @@ public class GraphBuilder {
         DirectedSparseGraph<Bundle, Edge> graph = new DirectedSparseGraph<Bundle, Edge>();
         for (Bundle exporting : context.getBundles()) {
             graph.addVertex(exporting);
-            BundleWiring wiring = exporting.adapt(BundleWiring.class);
-            Map<Bundle, Set<BundleWire>> map = new HashMap<Bundle, Set<BundleWire>>();
-            List<BundleWire> exports = wiring.getProvidedWires(BundleRevision.PACKAGE_NAMESPACE);
-            if (exports == null) {
-                continue;
-            }
-            for (BundleWire export : exports) {
-                Bundle importing = export.getRequirerWiring().getBundle();
-                if (importing.equals(exporting)) {
-                    continue;
-                }
-                Set<BundleWire> wires = map.get(importing);
-                if (wires == null)  {
-                    wires = new HashSet<BundleWire>();
-                    map.put(importing, wires);
-                }
-                wires.add(export);
-            }
-            for (Entry<Bundle, Set<BundleWire>> entry : map.entrySet()) {
+            Map<Bundle, Set<String>> map = new HashMap<Bundle, Set<String>>();
+            addSimpleRequirements(exporting, map);
+            addBundleRequirements(exporting, map);
+            for (Entry<Bundle, Set<String>> entry : map.entrySet()) {
                 graph.addEdge(new Edge(exporting,entry.getKey(), entry.getValue()), 
                               new Pair<Bundle>(exporting, entry.getKey()));
             }
         }
         return graph;
+    }
+    
+    private void addSimpleRequirements(Bundle exporting, Map<Bundle, Set<String>> map) {
+        BundleWiring wiring = exporting.adapt(BundleWiring.class);
+        List<BundleWire> exportedPackages = wiring.getProvidedWires(BundleRevision.PACKAGE_NAMESPACE);
+        if (exportedPackages != null) {
+        	for (BundleWire export : exportedPackages) {
+        		Bundle importing = export.getRequirerWiring().getBundle();
+        		String packge = (String) export.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+        		if (importing.equals(exporting)) {
+        			continue;
+        		}
+        		addWire(packge, importing, map);
+        	}
+        }
+    }
+    
+    private void addBundleRequirements(Bundle exporting, Map<Bundle, Set<String>> map) {
+        BundleWiring wiring = exporting.adapt(BundleWiring.class);
+        List<BundleCapability> allPackages = wiring.getCapabilities(BundleRevision.PACKAGE_NAMESPACE);
+        List<BundleWire> selfExports = wiring.getProvidedWires(BundleRevision.BUNDLE_NAMESPACE);
+        if (selfExports != null) {
+        	for (BundleWire selfExport : selfExports) {
+        		Bundle importing = selfExport.getRequirerWiring().getBundle();
+        		for (BundleCapability implicitWire : allPackages) {
+        			String packge = (String) implicitWire.getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+        			addWire(packge, importing, map);
+        		}
+        	}
+        }
+    }
+    
+    private void addWire(String packge, Bundle importing, Map<Bundle, Set<String>> map) {
+		Set<String> wires = map.get(importing);
+		if (wires == null)  {
+			wires = new HashSet<String>();
+			map.put(importing, wires);
+		}
+		wires.add(packge);
     }
 }

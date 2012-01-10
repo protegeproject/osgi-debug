@@ -13,7 +13,6 @@
     <property name="bundle"       value="org.protege.osgi.debug.jar"/>
     <property name="manifest"     location = "${build}/manifest.mf"/>
 
-    <property name="protege.common" location="${protege.home}/bundles"/>
     <property name="protege.core"   location="${protege.common}/org.protege.editor.core.application.jar"/>
 
    <property file="version.properties"/>

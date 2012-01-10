@@ -279,8 +279,7 @@ public class MainPanel extends JPanel {
             if (name == null) {
                 return Color.BLACK;
             }
-			for (BundleWire export : edge.getPackages()) {
-			    String exportedPackage = (String) export.getCapability().getAttributes().get(BundleRevision.PACKAGE_NAMESPACE);
+			for (String exportedPackage : edge.getPackages()) {
 				if (name.equals(exportedPackage)) {
 					return Color.RED;
 				}
