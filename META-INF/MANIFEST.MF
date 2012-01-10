@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: OSGi Debug Plugin
-Bundle-SymbolicName: org.protege.osgi.debug
+Bundle-SymbolicName: org.protege.osgi.debug;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.protege.osgi.DebugActivator
 Bundle-Vendor: The Protege Team
@@ -33,4 +33,4 @@ Bundle-ClassPath: .,
  lib/jung-visualization.jar,
  lib/collections-generic.jar,
  lib/log4j.jar
-No-Plugin-XML: True
+
