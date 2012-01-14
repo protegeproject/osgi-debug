@@ -31,19 +31,29 @@ public class GraphBuilder {
         DirectedSparseGraph<Bundle, Edge> graph = new DirectedSparseGraph<Bundle, Edge>();
         for (Bundle exporting : context.getBundles()) {
             graph.addVertex(exporting);
-            Map<Bundle, Set<String>> map = new HashMap<Bundle, Set<String>>();
-            addSimpleRequirements(exporting, map);
-            addBundleRequirements(exporting, map);
-            for (Entry<Bundle, Set<String>> entry : map.entrySet()) {
-                graph.addEdge(new Edge(exporting,entry.getKey(), entry.getValue()), 
-                              new Pair<Bundle>(exporting, entry.getKey()));
+            if (isResolved(exporting)) {
+            	Map<Bundle, Set<String>> map = new HashMap<Bundle, Set<String>>();
+            	addSimpleRequirements(exporting, map);
+            	addBundleRequirements(exporting, map);
+            	for (Entry<Bundle, Set<String>> entry : map.entrySet()) {
+            		graph.addEdge(new Edge(exporting,entry.getKey(), entry.getValue()), 
+            				new Pair<Bundle>(exporting, entry.getKey()));
+            	}
             }
         }
         return graph;
     }
     
+    private boolean isResolved(Bundle bundle) {
+    	int state = bundle.getState();
+    	return state != Bundle.UNINSTALLED && state != Bundle.INSTALLED;
+    }
+    
     private void addSimpleRequirements(Bundle exporting, Map<Bundle, Set<String>> map) {
         BundleWiring wiring = exporting.adapt(BundleWiring.class);
+        if (wiring == null) {
+        	return;
+        }
         List<BundleWire> exportedPackages = wiring.getProvidedWires(BundleRevision.PACKAGE_NAMESPACE);
         if (exportedPackages != null) {
         	for (BundleWire export : exportedPackages) {
