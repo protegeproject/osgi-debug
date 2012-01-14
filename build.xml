@@ -90,7 +90,7 @@
         <copy todir="${protege.plugins}">
             <fileset dir="osgi/equinox"
                      includes="*.jar"
-                     excludes="org.eclipse.equinox.common*.jar,org.eclipse.osgi*.jar"/>
+                     excludes="org.eclipse.equinox.common*.jar,org.eclipse.osgi_*.jar"/>
         </copy>
     </target>
 
