@@ -9,6 +9,7 @@ public class DebugActivator implements BundleActivator {
     private static final Logger log = Logger.getLogger(DebugActivator.class);
     
     public static final String PROTEGE_APPLICATION = "org.protege.editor.core.application";
+    public static final String FORCE_DEBUG = "org.protege.osgi.debug.force";
     
     private PackageViewer servlets; 
 
@@ -20,7 +21,8 @@ public class DebugActivator implements BundleActivator {
     	boolean isProtege = isProtege(context);
         boolean servletsStarted = startServlets(context);
         boolean jungStarted = false;
-        if (!isProtege) {
+        String forceStart = System.getProperty(FORCE_DEBUG);
+        if (!isProtege ||  (forceStart != null && forceStart.toLowerCase().equals("true"))) {
         	jungStarted = startJung(context);
         }
         if (!servletsStarted && !isProtege && !jungStarted) {
