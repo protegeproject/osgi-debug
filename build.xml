@@ -9,7 +9,7 @@
     <property name="classes"      location="${build}/classes"/>
     <property name="bundle.dir"   location="${build}"/>
     <property name="equinox"      location="./osgi/equinox"/>
-    <property name="src"          location="./src"/>
+    <property name="src"          location="./src/main/java"/>
     <property name="bundle"       value="org.protege.osgi.debug.jar"/>
     <property name="manifest"     location = "${build}/manifest.mf"/>
 
